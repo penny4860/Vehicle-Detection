@@ -7,6 +7,7 @@ import random
 import cv2
 import numpy as np
 import h5py
+from sklearn.utils import shuffle
 
 
 class FileHDF5(object):
@@ -90,3 +91,15 @@ def files_to_images(files):
         images.append(image)
     images = np.array(images)
     return images
+
+
+def create_xy(pos_features, neg_features):
+    pos_ys = np.ones((len(pos_features)))
+    neg_ys = np.zeros((len(neg_features)))
+    xs = np.concatenate([pos_features, neg_features], axis=0)
+    ys = np.concatenate([pos_ys, neg_ys], axis=0)
+    xs, ys = shuffle(xs, ys, random_state=0)
+
+    from sklearn.model_selection import train_test_split
+    X_train, X_test, y_train, y_test = train_test_split(xs, ys, test_size=0.25, random_state=0)
+    return X_train, X_test, y_train, y_test
