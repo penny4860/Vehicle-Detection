@@ -1,6 +1,7 @@
 
 import os
 from car.data import list_files, files_to_images, FileHDF5
+from car.desc import get_hog_features
 
 CAR_DIR = "dataset//vehicles"
 NON_CAR_DIR = "dataset//non-vehicles"
@@ -17,6 +18,10 @@ if __name__ == "__main__":
     neg_imgs = files_to_images(negative_files)
     print(pos_imgs.shape, neg_imgs.shape)
     
-    FileHDF5.write(pos_imgs, os.path.join(os.path.dirname(__file__), "car_db.hdf5"), "pos_imgs", "w")
-    FileHDF5.write(neg_imgs, os.path.join(os.path.dirname(__file__), "car_db.hdf5"), "neg_imgs", "a")
+    pos_features = get_hog_features(pos_imgs)
+    neg_features = get_hog_features(neg_imgs)
     
+    FileHDF5.write(pos_features, os.path.join(os.path.dirname(__file__), "car_db.hdf5"), "pos_features", "w")
+    FileHDF5.write(neg_features, os.path.join(os.path.dirname(__file__), "car_db.hdf5"), "neg_features", "a")
+    print(pos_features.shape, neg_features.shape)
+
