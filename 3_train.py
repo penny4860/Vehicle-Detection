@@ -27,3 +27,6 @@ if __name__ == "__main__":
     y_true, y_pred = y_test, clf.predict(X_test)
     print(classification_report(y_true, y_pred))
 
+    from car.train import save_model
+    save_model(clf, "model.pkl")
+
