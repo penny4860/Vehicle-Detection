@@ -24,12 +24,12 @@ if __name__ == "__main__":
     xs, ys = shuffle(xs, ys, random_state=0)
     print(xs.shape, ys.shape)
 
-    from sklearn.svm import SVC
-    from sklearn.model_selection import GridSearchCV
-    parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
-    svr = SVC()
-    clf = GridSearchCV(svr, parameters)
-    clf.fit(xs, ys)
-    # clf.best_params_
+#     from sklearn.svm import SVC
+#     from sklearn.model_selection import GridSearchCV
+#     parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
+#     svr = SVC()
+#     clf = GridSearchCV(svr, parameters)
+#     clf.fit(xs, ys)
+#     # clf.best_params_
 
 
