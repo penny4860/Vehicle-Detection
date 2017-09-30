@@ -3,8 +3,43 @@
 import os
 import glob
 import random
+
 import cv2
 import numpy as np
+import h5py
+
+
+class FileHDF5(object):
+    @staticmethod
+    def read(filename, db_name):
+        db = h5py.File(filename, "r")
+        np_data = np.array(db[db_name])
+        db.close()
+        
+        return np_data
+
+    @staticmethod
+    def write(data, filename, db_name, write_mode="w"):
+        """Write data to hdf5 format.
+
+        # Args
+            data : ndarray
+            filename : str
+                including full path
+            db_name : str
+                database name
+        """
+        def _check_directory(filename):
+            directory = os.path.dirname(filename)
+            if not os.path.exists(directory):
+                os.mkdir(directory)
+
+        _check_directory(filename)        
+        # todo : overwrite check
+        db = h5py.File(filename, write_mode)
+        dataset = db.create_dataset(db_name, data.shape, dtype="float")
+        dataset[:] = data[:]
+        db.close()
 
 
 def list_files(directory, pattern="*.*", n_files_to_sample=None, recursive_option=True, random_order=True):
