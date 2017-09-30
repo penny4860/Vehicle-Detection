@@ -24,3 +24,17 @@ def evaluate_params(X, y, X_test, y_test, params):
         y_true, y_pred = y_test, clf.predict(X_test)
         print(classification_report(y_true, y_pred))
         print("==============================================================")
+
+
+import pickle
+
+def save_model(clf, model_name="clf.pkl"):
+    # save the classifier
+    with open(model_name, 'wb') as f:
+        pickle.dump(clf, f)
+
+def load_model(model_name="clf.pkl"):
+    with open(model_name, 'rb') as f:
+        clf = pickle.load(f)
+    return clf
+
