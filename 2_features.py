@@ -1,25 +1,10 @@
 
 import os
 from car.data import list_files, files_to_images, FileHDF5
+from car.desc import get_hog_features
 
 CAR_DIR = "dataset//vehicles"
 NON_CAR_DIR = "dataset//non-vehicles"
-
-def get_features(images, n_orientations=9, pix_per_cell=8, cell_per_block=2):
-    from skimage.feature import hog
-    import numpy as np
-    features = []
-    for img in images:
-        feature_array = hog(img,
-                            orientations=n_orientations,
-                            pixels_per_cell=(pix_per_cell, pix_per_cell),
-                            cells_per_block=(cell_per_block, cell_per_block),
-                            visualise=False,
-                            feature_vector=True)
-        features.append(feature_array)
-
-    features = np.array(features)
-    return features
 
 
 if __name__ == "__main__":
@@ -33,8 +18,8 @@ if __name__ == "__main__":
     neg_imgs = files_to_images(negative_files)
     print(pos_imgs.shape, neg_imgs.shape)
     
-    pos_features = get_features(pos_imgs)
-    neg_features = get_features(neg_imgs)
+    pos_features = get_hog_features(pos_imgs)
+    neg_features = get_hog_features(neg_imgs)
     
     FileHDF5.write(pos_features, os.path.join(os.path.dirname(__file__), "car_db.hdf5"), "pos_features", "w")
     FileHDF5.write(neg_features, os.path.join(os.path.dirname(__file__), "car_db.hdf5"), "neg_features", "a")
