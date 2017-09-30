@@ -3,6 +3,9 @@
 import os
 import glob
 import random
+import cv2
+import numpy as np
+
 
 def list_files(directory, pattern="*.*", n_files_to_sample=None, recursive_option=True, random_order=True):
     """list files in a directory matched in defined pattern.
@@ -42,3 +45,13 @@ def list_files(directory, pattern="*.*", n_files_to_sample=None, recursive_optio
         else:
             files = files[:n_files_to_sample]
     return files
+
+
+def files_to_images(files):
+    images = []
+    for filename in files:
+        image = cv2.imread(filename)
+        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        images.append(image)
+    images = np.array(images)
+    return images
