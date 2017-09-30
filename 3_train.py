@@ -24,12 +24,32 @@ if __name__ == "__main__":
     xs, ys = shuffle(xs, ys, random_state=0)
     print(xs.shape, ys.shape)
 
-#     from sklearn.svm import SVC
-#     from sklearn.model_selection import GridSearchCV
-#     parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
-#     svr = SVC()
-#     clf = GridSearchCV(svr, parameters)
-#     clf.fit(xs, ys)
-#     # clf.best_params_
 
 
+    from sklearn.model_selection import train_test_split
+    from sklearn.model_selection import GridSearchCV
+    from sklearn.svm import SVC
+    # Split the dataset in two equal parts
+    X_train, X_test, y_train, y_test = train_test_split(xs, ys, test_size=0.25, random_state=0)
+    
+    # Set the parameters by cross-validation
+    tuned_parameters = [{'kernel': ['rbf'], 'gamma': [1e-1, 1e-2, 1e-3, 1e-4], 'C': [1, 10, 100]},
+                        {'kernel': ['linear'], 'C': [1, 10, 100]}]
+
+    # tuned_parameters = {'kernel':('linear', 'rbf'), 'C':[1, 10]}
+    clf = GridSearchCV(SVC(), tuned_parameters)
+    clf.fit(X_train, y_train)
+
+    print("1. Best parameters set found on development set:")
+    print()
+    print(clf.best_params_)
+    print()
+    print("2. Grid scores on development set:")
+    print()
+    means = clf.cv_results_['mean_test_score']
+    stds = clf.cv_results_['std_test_score']
+    for mean, std, params in zip(means, stds, clf.cv_results_['params']):
+        print("    %0.3f (+/-%0.03f) for %r" % (mean, std * 2, params))
+    
+    
+    
