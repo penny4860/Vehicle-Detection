@@ -38,24 +38,29 @@ class ImgScanner(object):
             time.sleep(0.025)
 
 
-# class ImgPyramid(object):
-#     
-#     def __init__(self):
-#         pass
-#     
-#     def generate_next(self, scale=0.7, min_y=30, min_x=30):
-#         yield self._layer
-# 
-#         while True:
-#             h = int(self._layer.shape[0] * scale)
-#             w = int(self._layer.shape[1] * scale)
-#             
-#             self._layer = cv2.resize(self._layer, (w, h))
-#             
-#             if h < min_y or w < min_x:
-#                 break
-#             self.scale_for_original = self.scale_for_original * scale
-#             yield self._layer
+class ImgPyramid(object):
+     
+    def __init__(self, image, scale=0.7, min_y=30, min_x=30):
+        self._layer = image.copy()
+        self._scale_for_original = 1.0
+        
+        self._scale = scale
+        self._min_y = min_y
+        self._min_x = min_x
+     
+    def generate_next(self):
+        yield self._layer, self._scale_for_original
+ 
+        while True:
+            h = int(self._layer.shape[0] * self._scale)
+            w = int(self._layer.shape[1] * self._scale)
+             
+            self._layer = cv2.resize(self._layer, (w, h))
+             
+            if h < self._min_y or w < self._min_x:
+                break
+            self._scale_for_original = self._scale_for_original * self._scale
+            yield self._layer, self._scale_for_original
 
 
 class ImageScanner(object):
@@ -104,18 +109,18 @@ if __name__ == "__main__":
     import time
     
     image = cv2.imread("test_images//test1.jpg")[200:400, 200:400, :]
-#     image_scanner = ImageScanner(image[200:400, 200:400, :])
-#     
-#     for layer in image_scanner.get_next_layer():
-#         for y, x, window in image_scanner.get_next_patch():
-#             clone = layer.copy()
-#             cv2.rectangle(clone, (x, y), (x + 30, y + 30), (0, 255, 0), 2)
-#             cv2.imshow("Test Image Scanner", clone)
-#             cv2.waitKey(1)
-#             time.sleep(0.025)
-            
-    image_scanner = ImgScanner(image)
-    image_scanner.show_process()
+    image_pyramid = ImgPyramid(image)
+    
+    for layer, _ in image_pyramid.generate_next():
+        image_scanner = ImgScanner(layer)
+        for y, x, window in image_scanner.generate_next():
+            clone = layer.copy()
+            cv2.rectangle(clone, (x, y), (x + 30, y + 30), (0, 255, 0), 2)
+            cv2.imshow("Test Image Scanner", clone)
+            cv2.waitKey(1)
+            time.sleep(0.025)
+    
+    
     
     
     
