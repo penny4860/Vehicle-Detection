@@ -1,14 +1,14 @@
 
-import os
-from car.data import list_files, files_to_images, FileHDF5
-from car.desc import get_hog_features
+
+from sklearn.svm import SVC
+from car.data import FileHDF5, create_xy
+
 
 CAR_DIR = "dataset//vehicles"
 NON_CAR_DIR = "dataset//non-vehicles"
 
 def evaluate_params(X, y, X_test, y_test, params):
     from sklearn.model_selection import GridSearchCV
-    from sklearn.svm import SVC
     from sklearn.metrics import classification_report
     clf = GridSearchCV(SVC(), params)
     clf.fit(X, y)
@@ -30,20 +30,6 @@ def evaluate_params(X, y, X_test, y_test, params):
         print("==============================================================")
 
 
-def create_xy(pos_features, neg_features):
-    import numpy as np
-    from sklearn.utils import shuffle
-    pos_ys = np.ones((len(pos_features)))
-    neg_ys = np.zeros((len(neg_features)))
-    xs = np.concatenate([pos_features, neg_features], axis=0)
-    ys = np.concatenate([pos_ys, neg_ys], axis=0)
-    xs, ys = shuffle(xs, ys, random_state=0)
-
-    from sklearn.model_selection import train_test_split
-    X_train, X_test, y_train, y_test = train_test_split(xs, ys, test_size=0.25, random_state=0)
-    return X_train, X_test, y_train, y_test
-
-
 if __name__ == "__main__":
 
     # 1. load features    
@@ -58,3 +44,8 @@ if __name__ == "__main__":
 
     # {'kernel': 'rbf', 'gamma': 0.1, 'C': 10}
     evaluate_params(X_train, y_train, X_test, y_test, tuned_parameters)
+
+    clf = SVC()
+    clf.fit(X_train, y_train)    
+
+
