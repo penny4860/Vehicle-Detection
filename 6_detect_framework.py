@@ -9,15 +9,10 @@ if __name__ == "__main__":
     
     img = cv2.imread("test_images//test1.jpg")
     d = ImgDetector(classifier=load_model("model.pkl"))
-    img_draw = d.run(img[300:, :, :])
-    print(len(d.detect_boxes))
-    print(d.detect_boxes)
+    img_draw = d.run(img, (0, 300))
     
-    import numpy as np   
-    img_ = np.concatenate([img[:300, :, :], img_draw], axis=0)
-    print(img_.shape)
-
-    cv2.imshow("Test Image Scanner", img_)
+    print(d.detect_boxes)
+    cv2.imshow("Test Image Scanner", img_draw)
     cv2.waitKey(0)
 
 
