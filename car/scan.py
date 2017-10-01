@@ -5,7 +5,7 @@ import time
 
 class ImgScanner(object):
     
-    def __init__(self, image, step_y=5, step_x=5, win_y=64, win_x=64):
+    def __init__(self, image, step_y=16, step_x=16, win_y=64, win_x=64):
         self._layer = image
         self._step_x = step_x
         self._step_y = step_y
