@@ -13,19 +13,29 @@ class ImgDetector(object):
         self._slider = None
         self._clf = classifier
         self.detect_boxes = []
+        
+        self._start_x = 0
+        self._start_y = 0
+        
     
-    def run(self, image):
+    def run(self, image, start_pt=(300,0)):
         """
         # Args
             image : ndarray, shape of (H, W, 3)
                 BGR-ordered image
-        
+            start_pt : tuple
+                (x, y)
+
         # Returns
             drawed : ndarray, same size of image
                 Image with patch recognized in input image        
         """
-        self._slider = Slider(image)
+        self._start_x = start_pt[0]
+        self._start_y = start_pt[1]
         
+        scan_img = image[start_pt[1]:, start_pt[0]:, :]
+        
+        self._slider = Slider(scan_img)
         for patch in self._slider.generate_next():
             patch_gray = cv2.cvtColor(patch, cv2.COLOR_BGR2GRAY)
             
@@ -44,9 +54,11 @@ class ImgDetector(object):
         p1, p2 = self._slider.get_bb()
         x1, y1 = p1
         x2, y2 = p2
-        box = (x1, y1, x2, y2)
+        box = (x1 + self._start_x,
+               y1 + self._start_y,
+               x2 + self._start_x,
+               y2 + self._start_y)
         self.detect_boxes.append(box)
-
 
     def _draw_boxes(self, image):
         """Draw detected boxes to an image"""
