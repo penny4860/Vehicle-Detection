@@ -2,7 +2,7 @@
 from skimage.feature import hog
 import numpy as np
 
-def get_hog_features(images, n_orientations=9, pix_per_cell=8, cell_per_block=2):
+def get_hog_features(images, n_orientations=9, pix_per_cell=8, cell_per_block=2, feature_vector=True):
     """
     # Args
         images : ndarray, shape of (N, n_rows, n_cols)
@@ -18,7 +18,7 @@ def get_hog_features(images, n_orientations=9, pix_per_cell=8, cell_per_block=2)
                             pixels_per_cell=(pix_per_cell, pix_per_cell),
                             cells_per_block=(cell_per_block, cell_per_block),
                             visualise=False,
-                            feature_vector=True)
+                            feature_vector=feature_vector)
         features.append(feature_array)
 
     features = np.array(features)
