@@ -106,15 +106,15 @@ class Slider(object):
     
     def show_process(self):
         for _ in self.generate_next():
-            clone = self.layer.copy()
-            p1, p2 = self.img_scanner.get_bb()
+            clone = self._image.copy()
+            p1, p2 = self.get_bb()
             cv2.rectangle(clone, p1, p2, (0, 255, 0), 2)
             cv2.imshow("Test Image Scanner", clone)
             cv2.waitKey(1)
             time.sleep(0.025)
 
     def _set_original_box(self, p1, p2):
-        """Get bounding box in the original input image"""
+        """Set bounding box coordinate in the original image"""
         p1_original = [int(c / self.img_pyramid.scale_for_original) for c in (p1)]
         p2_original = [int(c / self.img_pyramid.scale_for_original) for c in (p2)]
 
@@ -122,6 +122,7 @@ class Slider(object):
         self._x2, self._y2 = p2_original
     
     def get_bb(self):
+        """Get coordinates being scanned in the original image"""
         p1 = (self._x1, self._y1)
         p2 = (self._x2, self._y2)
         return p1, p2
