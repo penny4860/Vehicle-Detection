@@ -60,6 +60,7 @@ class ImgPyramid(object):
         self.scale_for_original = 1.0
         
         self._scale = scale
+        
         self._min_y = min_y
         self._min_x = min_x
      
@@ -77,8 +78,15 @@ class ImgPyramid(object):
             self.scale_for_original = self.scale_for_original * self._scale
             yield self.layer
 
+    def show_process(self):
+        for _ in self.generate_next():
+            clone = self.layer.copy()
+            cv2.imshow("Test Image Pyramid", clone)
+            cv2.waitKey(1)
+            time.sleep(0.25)
 
-class Scanner(object):
+
+class Slider(object):
     
     def __init__(self, image):
         self._image = image
@@ -110,10 +118,13 @@ class Scanner(object):
 if __name__ == "__main__":
     import time
     
-    image = cv2.imread("test_images//test1.jpg")[200:400, 200:400, :]
-    scanner = ImgScanner(image)
-    scanner.show_process()
-    
+#     image = cv2.imread("test_images//test1.jpg")[200:400, 200:400, :]
+#     scanner = ImgScanner(image)
+#     scanner.show_process()
+
+    image = cv2.imread("test_images//test1.jpg")
+    pyramid = ImgPyramid(image)
+    pyramid.show_process()
     
     
     
