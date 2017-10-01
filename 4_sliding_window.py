@@ -65,7 +65,7 @@ class ImgPyramid(object):
         self._min_x = min_x
      
     def generate_next(self):
-        yield self.layer, self.scale_for_original
+        yield self.layer
  
         while True:
             h = int(self.layer.shape[0] * self._scale)
@@ -91,40 +91,48 @@ class Slider(object):
     def __init__(self, image):
         self._image = image
         self.layer = None
-    
+        
+        self.img_scanner = None
+        self.img_pyramid = None
+
     def generate_next(self):
-        image_pyramid = ImgPyramid(self._image)
-        for layer in image_pyramid.generate_next():
-            scanner = ImgScanner(layer)
+        self.img_pyramid = ImgPyramid(self._image)
+        for layer in self.img_pyramid.generate_next():
+            self.img_scanner = ImgScanner(layer)
             self.layer = layer
-            for patch, y1, y2, x1, x2 in scanner.generate_next():
-                y1_, y2_, x1_, x2_ = self._get_bb(y1, y2, x1, x2, image_pyramid.scale_for_original)
-                yield patch, y1_, y2_, x1_, x2_
+            for patch in self.img_scanner.generate_next():
+                p1, p2 = self.img_scanner.get_bb()
+                self._set_original_box(p1, p2)
+                yield patch
     
     def show_process(self):
-        for patch, _, _, _, _ in self.generate_next():
+        for _ in self.generate_next():
             clone = self.layer.copy()
-            cv2.rectangle(clone, (x, y), (x + self._win_x, y + self._win_y), (0, 255, 0), 2)
+            p1, p2 = self.img_scanner.get_bb()
+            cv2.rectangle(clone, p1, p2, (0, 255, 0), 2)
             cv2.imshow("Test Image Scanner", clone)
             cv2.waitKey(1)
             time.sleep(0.025)
-        
-    def _get_bb(self, y1, y2, x1, x2, scale_for_original):
-        """Get bounding box in the original input image"""
-        original_coords = [int(c / scale_for_original) for c in (y1, y2, x1, x2)]
-        return original_coords
 
+    def _set_original_box(self, p1, p2):
+        """Get bounding box in the original input image"""
+        p1_original = [int(c / self.img_pyramid.scale_for_original) for c in (p1)]
+        p2_original = [int(c / self.img_pyramid.scale_for_original) for c in (p2)]
+
+        self._x1, self._y1 = p1_original
+        self._x2, self._y2 = p2_original
+    
+    def get_bb(self):
+        p1 = (self._x1, self._y1)
+        p2 = (self._x2, self._y2)
+        return p1, p2
 
 if __name__ == "__main__":
     import time
     
-#     image = cv2.imread("test_images//test1.jpg")[200:400, 200:400, :]
-#     scanner = ImgScanner(image)
-#     scanner.show_process()
-
-    image = cv2.imread("test_images//test1.jpg")
-    pyramid = ImgPyramid(image)
-    pyramid.show_process()
+    image = cv2.imread("test_images//test1.jpg")[200:400, 200:400, :]
+    slider = Slider(image)
+    slider.show_process()
     
     
     
