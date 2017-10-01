@@ -21,8 +21,6 @@ class ImgScanner(object):
         """Generate next patch
         
         # Yields
-            y : 
-            x
             patch : ndarray, shape of (self._win_y, self._win_x) or (self._win_y, self._win_x, 3)
         """
         
