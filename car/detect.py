@@ -21,6 +21,7 @@ class ImgDetector(object):
         
         self.detect_boxes = []
         self.heat_boxes = []
+        self._feature_map = None
         
         self._start_x = 0
         self._start_y = 0
@@ -40,20 +41,12 @@ class ImgDetector(object):
         """
         self._start_x = start_pt[0]
         self._start_y = start_pt[1]
-        
         scan_img = image[start_pt[1]:, start_pt[0]:, :]
         
         self._slider = MultipleScanner(scan_img)
 
-        layer = cv2.cvtColor(self._slider.layer, cv2.COLOR_RGB2GRAY)
-        feature_map = self._desc.get_features([layer], feature_vector=False)
-        
         for _ in self._slider.generate_next():
-            if self._slider.layer.shape[0] != layer.shape[0]:
-                layer = cv2.cvtColor(self._slider.layer, cv2.COLOR_RGB2GRAY)
-                feature_map = self._desc.get_features([layer], feature_vector=False)
-            
-            feature_vector = self._get_feature_vector(feature_map)
+            feature_vector = self._get_feature_vector()
             
             # predict_proba
             if self._clf.predict(feature_vector) == 1.0:
@@ -68,7 +61,11 @@ class ImgDetector(object):
         return drawed
 
     
-    def _get_feature_vector(self, feature_map):
+    def _get_feature_vector(self):
+        if self._slider.is_updated_layer():
+            layer = cv2.cvtColor(self._slider.layer, cv2.COLOR_RGB2GRAY)
+            self._feature_map = self._desc.get_features([layer], feature_vector=False)
+
         params = self._desc.get_params()
         
         pix_per_cell = params["pix_per_cell"]
@@ -80,7 +77,7 @@ class ImgDetector(object):
         y1 = p1[1]//pix_per_cell
         x2 = x1 + unit_dim
         y2 = y1 + unit_dim
-        feature_vector = feature_map[:, y1:y2, x1:x2, :, :, :].ravel()
+        feature_vector = self._feature_map[:, y1:y2, x1:x2, :, :, :].ravel()
         feature_vector = feature_vector.reshape(1, -1)
         return feature_vector
 
