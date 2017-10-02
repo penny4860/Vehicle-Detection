@@ -69,15 +69,17 @@ class ImgDetector(object):
 
     
     def _get_feature_vector(self, feature_map):
-        pix_per_cell = 8
-        cell_per_block=2
-        unit = pix_per_cell - cell_per_block + 1
+        params = self._desc.get_params()
+        
+        pix_per_cell = params["pix_per_cell"]
+        cell_per_block = params["cell_per_block"]
+        unit_dim = pix_per_cell - cell_per_block + 1
         
         p1, _ = self._slider.get_pyramid_bb()
         x1 = p1[0]//pix_per_cell
         y1 = p1[1]//pix_per_cell
-        x2 = x1 + unit
-        y2 = y1 + unit
+        x2 = x1 + unit_dim
+        y2 = y1 + unit_dim
         feature_vector = feature_map[:, y1:y2, x1:x2, :, :, :].ravel()
         feature_vector = feature_vector.reshape(1, -1)
         return feature_vector
