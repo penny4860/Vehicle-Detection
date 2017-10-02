@@ -39,46 +39,52 @@ class ImgDetector(object):
             drawed : ndarray, same size of image
                 Image with patch recognized in input image        
         """
-        self._start_x = start_pt[0]
-        self._start_y = start_pt[1]
-        scan_img = image[start_pt[1]:, start_pt[0]:, :]
-        
-        self._slider = MultipleScanner(scan_img)
+        # 1. Run offset handling operation
+        scan_img = self._run_offset(image, start_pt)
 
+        # 2. Multiple sized sliding window scanner
+        self._slider = MultipleScanner(scan_img)
         for _ in self._slider.generate_next():
-            feature_vector = self._get_feature_vector()
             
-            # predict_proba
+            # 3. Get feature vector and run classifier
+            feature_vector = self._get_feature_vector()
             if self._clf.predict(feature_vector) == 1.0:
                 self._set_detect_boxes()
-        
+
+        # 4. Run heat map operation        
         if do_heat_map:
             self.heat_boxes = self._heat_map.get_boxes(self.detect_boxes, image.shape[1], image.shape[0])
         else:
             self.heat_boxes = self.detect_boxes
         
+        # 5. Draw detected boxes in the input image & return it
         drawed = self._draw_boxes(image, self.heat_boxes)
         return drawed
 
+    def _run_offset(self, image, start_pt):
+        self._start_x = start_pt[0]
+        self._start_y = start_pt[1]
+        return image[start_pt[1]:, start_pt[0]:, :]
     
     def _get_feature_vector(self):
+        
+        def _get_feature_map_point():
+            params = self._desc.get_params()
+            unit_dim = params["pix_per_cell"] - params["cell_per_block"] + 1
+
+            p1, _ = self._slider.get_pyramid_bb()
+            x1 = p1[0]//params["pix_per_cell"]
+            y1 = p1[1]//params["pix_per_cell"]
+            x2 = x1 + unit_dim
+            y2 = y1 + unit_dim
+            return x1, y1, x2, y2
+        
         if self._slider.is_updated_layer():
             layer = cv2.cvtColor(self._slider.layer, cv2.COLOR_RGB2GRAY)
             self._feature_map = self._desc.get_features([layer], feature_vector=False)
 
-        params = self._desc.get_params()
-        
-        pix_per_cell = params["pix_per_cell"]
-        cell_per_block = params["cell_per_block"]
-        unit_dim = pix_per_cell - cell_per_block + 1
-        
-        p1, _ = self._slider.get_pyramid_bb()
-        x1 = p1[0]//pix_per_cell
-        y1 = p1[1]//pix_per_cell
-        x2 = x1 + unit_dim
-        y2 = y1 + unit_dim
-        feature_vector = self._feature_map[:, y1:y2, x1:x2, :, :, :].ravel()
-        feature_vector = feature_vector.reshape(1, -1)
+        x1, y1, x2, y2 = _get_feature_map_point()        
+        feature_vector = self._feature_map[:, y1:y2, x1:x2, :, :, :].ravel().reshape(1, -1)
         return feature_vector
 
     def _set_detect_boxes(self):
