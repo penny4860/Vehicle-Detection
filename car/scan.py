@@ -129,7 +129,7 @@ class MultipleScanner(object):
         return p1, p2
 
     def get_pyramid_bb(self):
-        """Get coordinates being scanned in the original image"""
+        """Get coordinates being scanned in the scaled layer"""
         p1, p2 = self.img_scanner.get_bb()
         return p1, p2
 
