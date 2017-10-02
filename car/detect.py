@@ -5,20 +5,25 @@ import cv2
 from car.desc import get_hog_features
 from car.train import load_model
 from car.scan import MultipleScanner
-
+from car.heatmap import HeatMap
 
 class ImgDetector(object):
     
-    def __init__(self, classifier):
+    def __init__(self, classifier, heat_map=HeatMap()):
+        
+        # Todo : Slider class 를 외부에서 주입받도록 수정하자.
         self._slider = None
+        self._heat_map = heat_map
         self._clf = classifier
+        
         self.detect_boxes = []
+        self.heat_boxes = []
         
         self._start_x = 0
         self._start_y = 0
         
     
-    def run(self, image, start_pt=(300,0)):
+    def run(self, image, start_pt=(300,0), do_heat_map=True):
         """
         # Args
             image : ndarray, shape of (H, W, 3)
@@ -45,7 +50,13 @@ class ImgDetector(object):
             # predict_proba
             if self._clf.predict(feature_vector) == 1.0:
                 self._set_detect_boxes()
-        drawed = self._draw_boxes(image)
+        
+        if do_heat_map:
+            self.heat_boxes = self._heat_map.get_boxes(self.detect_boxes, image.shape[1], image.shape[0])
+        else:
+            self.heat_boxes = self.detect_boxes
+        
+        drawed = self._draw_boxes(image, self.heat_boxes)
         return drawed
 
     def _set_detect_boxes(self):
@@ -60,11 +71,11 @@ class ImgDetector(object):
                y2 + self._start_y)
         self.detect_boxes.append(box)
 
-    def _draw_boxes(self, image):
+    def _draw_boxes(self, image, boxes):
         """Draw detected boxes to an image"""
         
         clone = image.copy()
-        for box in self.detect_boxes:
+        for box in boxes:
             p1 = (box[0], box[1])
             p2 = (box[2], box[3])
             cv2.rectangle(clone, p1, p2, (0, 255, 0), 2)
@@ -72,4 +83,12 @@ class ImgDetector(object):
 
         
 if __name__ == "__main__":
-    pass
+    import matplotlib.pyplot as plt
+    img = plt.imread("..//test_images//test1.jpg")
+    d = ImgDetector(classifier=load_model("..//model.pkl"))
+    drawn = d.run(img, (0, 300))
+
+    plt.imshow(drawn)
+    plt.show()
+
+
