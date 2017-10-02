@@ -50,11 +50,15 @@ class ImgDetector(object):
                 layer = cv2.cvtColor(self._slider.layer, cv2.COLOR_RGB2GRAY)
                 feature_map = get_hog_features([layer], feature_vector=False)
             
-            p1, p2 = self._slider.get_pyramid_bb()
-            x1 = p1[0]//8
-            y1 = p1[1]//8
-            x2 = p2[0]//8 - 1
-            y2 = p2[1]//8 - 1
+            pix_per_cell = 8
+            cell_per_block=2
+            unit = pix_per_cell - cell_per_block + 1
+            
+            p1, _ = self._slider.get_pyramid_bb()
+            x1 = p1[0]//pix_per_cell
+            y1 = p1[1]//pix_per_cell
+            x2 = x1 + unit
+            y2 = y1 + unit
             feature_vector = feature_map[:, y1:y2, x1:x2, :, :, :].ravel()
             feature_vector = feature_vector.reshape(1, -1)
             
