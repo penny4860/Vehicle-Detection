@@ -39,6 +39,9 @@ class ImgDetector(object):
             drawed : ndarray, same size of image
                 Image with patch recognized in input image        
         """
+        self.detect_boxes = []
+        self.heat_boxes = []
+        
         # 1. Run offset handling operation
         scan_img = self._run_offset(image, start_pt)
 
