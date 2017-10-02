@@ -2,7 +2,7 @@
 
 import cv2
 
-from car.desc import get_hog_features
+from car.desc import HogDesc
 from car.train import load_model
 from car.scan import MultipleScanner
 from car.heatmap import HeatMap
@@ -15,6 +15,9 @@ class ImgDetector(object):
         self._slider = None
         self._heat_map = heat_map
         self._clf = classifier
+        
+        # Todo : 외부에서 주입
+        self._desc = HogDesc()
         
         self.detect_boxes = []
         self.heat_boxes = []
@@ -43,12 +46,12 @@ class ImgDetector(object):
         self._slider = MultipleScanner(scan_img)
 
         layer = cv2.cvtColor(self._slider.layer, cv2.COLOR_RGB2GRAY)
-        feature_map = get_hog_features([layer], feature_vector=False)
+        feature_map = self._desc.get_features([layer], feature_vector=False)
         
         for _ in self._slider.generate_next():
             if self._slider.layer.shape[0] != layer.shape[0]:
                 layer = cv2.cvtColor(self._slider.layer, cv2.COLOR_RGB2GRAY)
-                feature_map = get_hog_features([layer], feature_vector=False)
+                feature_map = self._desc.get_features([layer], feature_vector=False)
             
             feature_vector = self._get_feature_vector(feature_map)
             
