@@ -49,18 +49,17 @@ class HeatMap(object):
                 ax.set_title(text, fontsize=30)
             plt.show()
             
+        def _draw_box(image, boxes):
+            drawn = image.copy()
+            for box in boxes:
+                cv2.rectangle(drawn, (box[0], box[1]), (box[2], box[3]), (0,0,255), 6)
+            return drawn
+            
         heat_boxes = self.get_boxes(boxes, image.shape[1], image.shape[0])
+        original_box_img =_draw_box(image, boxes)
+        heat_box_img = _draw_box(image, heat_boxes)
 
-        drawn1 = np.zeros_like(image)
-        drawn2 = np.zeros_like(image)
-
-        for box in boxes:
-            cv2.rectangle(drawn1, (box[0], box[1]), (box[2], box[3]), (0,0,255), 6)
-        
-        for box in heat_boxes:
-            cv2.rectangle(drawn2, (box[0], box[1]), (box[2], box[3]), (0,0,255), 6)
-
-        _plot_images([self._heat_map, self._heat_bin, drawn1, drawn2],
+        _plot_images([self._heat_map, self._heat_bin, original_box_img, heat_box_img],
                      ["heat map", "thresholded heat map", "input boxes", "heat map processed boxes"])
 
     def _get_bin(self):
