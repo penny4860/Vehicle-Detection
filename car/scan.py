@@ -89,7 +89,7 @@ class MultipleScanner(object):
     
     def __init__(self, image):
         self._image = image
-        self.layer = None
+        self.layer = image.copy()
         
         self.img_scanner = None
         self.img_pyramid = None
