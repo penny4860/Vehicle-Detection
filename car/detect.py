@@ -50,17 +50,7 @@ class ImgDetector(object):
                 layer = cv2.cvtColor(self._slider.layer, cv2.COLOR_RGB2GRAY)
                 feature_map = get_hog_features([layer], feature_vector=False)
             
-            pix_per_cell = 8
-            cell_per_block=2
-            unit = pix_per_cell - cell_per_block + 1
-            
-            p1, _ = self._slider.get_pyramid_bb()
-            x1 = p1[0]//pix_per_cell
-            y1 = p1[1]//pix_per_cell
-            x2 = x1 + unit
-            y2 = y1 + unit
-            feature_vector = feature_map[:, y1:y2, x1:x2, :, :, :].ravel()
-            feature_vector = feature_vector.reshape(1, -1)
+            feature_vector = self._get_feature_vector(feature_map)
             
             # predict_proba
             if self._clf.predict(feature_vector) == 1.0:
@@ -73,6 +63,21 @@ class ImgDetector(object):
         
         drawed = self._draw_boxes(image, self.heat_boxes)
         return drawed
+
+    
+    def _get_feature_vector(self, feature_map):
+        pix_per_cell = 8
+        cell_per_block=2
+        unit = pix_per_cell - cell_per_block + 1
+        
+        p1, _ = self._slider.get_pyramid_bb()
+        x1 = p1[0]//pix_per_cell
+        y1 = p1[1]//pix_per_cell
+        x2 = x1 + unit
+        y2 = y1 + unit
+        feature_vector = feature_map[:, y1:y2, x1:x2, :, :, :].ravel()
+        feature_vector = feature_vector.reshape(1, -1)
+        return feature_vector
 
     def _set_detect_boxes(self):
         """Set detected box coordinate"""
