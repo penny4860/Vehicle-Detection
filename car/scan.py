@@ -99,6 +99,7 @@ class MultipleScanner(object):
         for layer in self.img_pyramid.generate_next():
             self.img_scanner = ImgScanner(layer)
             self.layer = layer
+
             for patch in self.img_scanner.generate_next():
                 p1, p2 = self.img_scanner.get_bb()
                 self._set_original_box(p1, p2)
@@ -125,6 +126,11 @@ class MultipleScanner(object):
         """Get coordinates being scanned in the original image"""
         p1 = (self._x1, self._y1)
         p2 = (self._x2, self._y2)
+        return p1, p2
+
+    def get_pyramid_bb(self):
+        """Get coordinates being scanned in the original image"""
+        p1, p2 = self.img_scanner.get_bb()
         return p1, p2
 
 if __name__ == "__main__":
