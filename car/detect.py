@@ -2,7 +2,7 @@
 
 import cv2
 
-from car.desc import HogDesc
+from car.desc import HogDesc, HogMap
 from car.train import load_model
 from car.scan import MultipleScanner
 from car.heatmap import HeatMap
@@ -17,7 +17,7 @@ class ImgDetector(object):
         self._clf = classifier
         
         # Todo : 외부에서 주입
-        self._desc = HogDesc()
+        self._desc_map = HogMap(HogDesc())
         
         self.detect_boxes = []
         self.heat_boxes = []
@@ -67,24 +67,12 @@ class ImgDetector(object):
         return image[start_pt[1]:, start_pt[0]:, :]
     
     def _get_feature_vector(self):
-        
-        def _get_feature_map_point():
-            params = self._desc.get_params()
-            unit_dim = params["pix_per_cell"] - params["cell_per_block"] + 1
-
-            p1, _ = self._slider.get_pyramid_bb()
-            x1 = p1[0]//params["pix_per_cell"]
-            y1 = p1[1]//params["pix_per_cell"]
-            x2 = x1 + unit_dim
-            y2 = y1 + unit_dim
-            return x1, y1, x2, y2
-        
         if self._slider.is_updated_layer():
             layer = cv2.cvtColor(self._slider.layer, cv2.COLOR_RGB2GRAY)
-            self._feature_map = self._desc.get_features([layer], feature_vector=False)
+            self._desc_map.set_features(layer)
 
-        x1, y1, x2, y2 = _get_feature_map_point()        
-        feature_vector = self._feature_map[:, y1:y2, x1:x2, :, :, :].ravel().reshape(1, -1)
+        start_pt, _ = self._slider.get_pyramid_bb()
+        feature_vector = self._desc_map.get_features(start_pt[0], start_pt[1])
         return feature_vector
 
     def _set_detect_boxes(self):
