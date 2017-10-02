@@ -54,7 +54,7 @@ class ImgScanner(object):
 
 class ImgPyramid(object):
      
-    def __init__(self, image, scale=0.7, min_y=64, min_x=64):
+    def __init__(self, image, scale=0.7, min_y=128, min_x=128):
         self.layer = image.copy()
         self.scale_for_original = 1.0
         
@@ -128,7 +128,7 @@ class MultipleScanner(object):
         return p1, p2
 
 if __name__ == "__main__":
-    image = cv2.imread("..//test_images//test1.jpg")[200:400, 200:400, :]
+    image = cv2.imread("..//test_images//test1.jpg")[400:, :, :]
     slider = MultipleScanner(image)
     slider.show_process()
     
