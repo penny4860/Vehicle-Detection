@@ -4,7 +4,7 @@ import cv2
 
 from car.desc import get_hog_features
 from car.train import load_model
-from car.scan import Slider
+from car.scan import MultipleScanner
 
 
 class ImgDetector(object):
@@ -35,7 +35,7 @@ class ImgDetector(object):
         
         scan_img = image[start_pt[1]:, start_pt[0]:, :]
         
-        self._slider = Slider(scan_img)
+        self._slider = MultipleScanner(scan_img)
         for patch in self._slider.generate_next():
             patch_gray = cv2.cvtColor(patch, cv2.COLOR_RGB2GRAY)
             
