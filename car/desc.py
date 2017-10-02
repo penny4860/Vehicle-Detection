@@ -56,12 +56,41 @@ class HogDesc(_Descriptor):
     
         features = np.array(features)
         return features
-                
-    def get_params(self):
-        params = {"orientations" : self._orientations,
-                  "pix_per_cell" : self._pix_per_cell,
-                  "cell_per_block" : self._cell_per_block}
-        return params
+
+
+class HogMap(object):
+    
+    def __init__(self, hog_desc=HogDesc()):
+        self._img = None
+        self._desc = hog_desc
+
+    def _to_feature_map_point(self, x, y):
+        """
+        # Args
+            x : start x point in image
+            y : start y point in image
+
+        # Returns
+            x1 : x1 point in hog feature map
+            y1 : y1 point in hog feature map
+            x2
+            y2
+        """
+        unit_dim = self._desc._pix_per_cell - self._desc._cell_per_block + 1
+        x1 = x // self._desc._pix_per_cell
+        y1 = y // self._desc._pix_per_cell
+        x2 = x1 + unit_dim
+        y2 = y1 + unit_dim
+        return x1, y1, x2, y2
+
+    def set_features(self, gray):
+        self._img = gray
+        self._feature_map = self._desc.get_features([gray], feature_vector=False)
+    
+    def get_features(self, x, y):
+        x1, y1, x2, y2 = self._to_feature_map_point(x, y)
+        feature_vector = self._feature_map[:, y1:y2, x1:x2, :, :, :].ravel().reshape(1, -1)
+        return feature_vector
 
 
 
