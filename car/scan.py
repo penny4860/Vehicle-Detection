@@ -89,21 +89,24 @@ class MultipleScanner(object):
     
     def __init__(self, image):
         self._image = image
-        self.layer = image.copy()
+        self.layer = None
         
         self.img_scanner = None
         self.img_pyramid = None
+        self._updated = False
 
     def generate_next(self):
         self.img_pyramid = ImgPyramid(self._image)
         for layer in self.img_pyramid.generate_next():
             self.img_scanner = ImgScanner(layer)
             self.layer = layer
+            self._updated = True
 
             for patch in self.img_scanner.generate_next():
                 p1, p2 = self.img_scanner.get_bb()
                 self._set_original_box(p1, p2)
                 yield patch
+                self._updated = False
 
     def get_bb(self):
         """Get coordinates being scanned in the original image"""
@@ -115,6 +118,9 @@ class MultipleScanner(object):
         """Get coordinates being scanned in the scaled layer"""
         p1, p2 = self.img_scanner.get_bb()
         return p1, p2
+
+    def is_updated_layer(self):
+        return self._updated
     
     def show_process(self):
         for _ in self.generate_next():
