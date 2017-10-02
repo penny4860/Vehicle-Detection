@@ -41,11 +41,22 @@ class ImgDetector(object):
         scan_img = image[start_pt[1]:, start_pt[0]:, :]
         
         self._slider = MultipleScanner(scan_img)
-        for patch in self._slider.generate_next():
-            patch_gray = cv2.cvtColor(patch, cv2.COLOR_RGB2GRAY)
+
+        layer = cv2.cvtColor(self._slider.layer, cv2.COLOR_RGB2GRAY)
+        feature_map = get_hog_features([layer], feature_vector=False)
+        
+        for _ in self._slider.generate_next():
+            if self._slider.layer.shape[0] != layer.shape[0]:
+                layer = cv2.cvtColor(self._slider.layer, cv2.COLOR_RGB2GRAY)
+                feature_map = get_hog_features([layer], feature_vector=False)
             
-            # Todo : get_hog_features -> class
-            feature_vector = get_hog_features([patch_gray])
+            p1, p2 = self._slider.get_pyramid_bb()
+            x1 = p1[0]//8
+            y1 = p1[1]//8
+            x2 = p2[0]//8 - 1
+            y2 = p2[1]//8 - 1
+            feature_vector = feature_map[:, y1:y2, x1:x2, :, :, :].ravel()
+            feature_vector = feature_vector.reshape(1, -1)
             
             # predict_proba
             if self._clf.predict(feature_vector) == 1.0:
