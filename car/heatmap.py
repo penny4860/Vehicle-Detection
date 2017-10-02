@@ -101,7 +101,7 @@ if __name__ == '__main__':
 
     img = plt.imread("..//test_images//test1.jpg")
     d = ImgDetector(classifier=load_model("..//model.pkl"))
-    d.run(img, (0, 300))
+    d.run(img, (0, 300), False)
 
     heat_map = HeatMap()
     # boxes = heat_map.get_boxes(d.detect_boxes, img_draw.shape[1], img_draw.shape[0])
