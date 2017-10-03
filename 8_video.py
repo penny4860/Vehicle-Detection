@@ -10,8 +10,9 @@ imageio.plugins.ffmpeg.download()
 from moviepy.editor import VideoFileClip
 # from detector.framework import ImageFramework
 
+d = VideoDetector(ImgDetector(classifier=load_model("model_v3.pkl")))
 def process_image(image):
-    d = ImgDetector(classifier=load_model("model_v4.pkl"))
+    # d = ImgDetector(classifier=load_model("model_v4.pkl"))
     img_draw = d.run(image, do_heat_map=True)
     return img_draw
  
