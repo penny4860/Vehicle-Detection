@@ -27,38 +27,36 @@ class VideoDetector(object):
         
         # 1. 인식된 객체에 대한 list 생성
         cars = self._create_cur_cars(self._img_detector.heat_boxes)
+        print("heat boxes", len(cars), end=", ")
         
         # 2. 이전 frame 과 matching
         pairs = match(cars, self._prev_cars) # [ (현재, 과거), .... ]
         
-        match_cars = []
-        for i, cur_car in enumerate(cars[:]):
+        # 3. matching 된 현재 frame 에서의 box를 처리
+        for i, cur_car in enumerate(cars):
             # matched
             if i in pairs[:, 0]:
                 matching_idx = np.where(pairs[:, 0] == i)[0][0]
                 prev_idx = int(pairs[matching_idx, 1])
-                
-                self._prev_cars[prev_idx].detect_update(cur_car)
-                match_cars.append(self._prev_cars[prev_idx])
-                
-                cars.remove(cur_car)
-                self._prev_cars.remove(self._prev_cars[prev_idx])
-                
-        # 4. unmatched previous car 중에서 
-        for prev_car in self._prev_cars:
-            prev_car.undetect_update()
-        
-        match_cars = match_cars + cars + self._prev_cars
-        for car in match_cars[:]:
-            if car.get_status() == "undetect":
-                match_cars.remove(car)
+                cur_car.detect_update(self._prev_cars[prev_idx])
 
+        # 4. unmatching 된 과거 frame 에서의 box를 처리
+        for i, prev_car in enumerate(self._prev_cars):
+            # unmatched
+            if i not in pairs[:, 1]:
+                prev_car.undetect_update()
+                if prev_car.get_status() == "hold":
+                    cars.append(prev_car)
+        
+        print("cur cars", len(cars), end=", ")
         boxes = []
-        for car in match_cars[:]:
+        for car in cars:
             if car.get_status() == "detect":
-                boxes.append(car._box)
-                
-        self._prev_cars = match_cars
+                boxes.append(car.get_box())
+        print("draw boxes", len(boxes), end=", ")
+        
+        import copy
+        self._prev_cars = copy.deepcopy(cars)
         return self._draw_boxes(img, boxes)
 
 
