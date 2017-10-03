@@ -2,6 +2,7 @@
 
 from sklearn.svm import SVC
 from car.data import FileHDF5, create_xy
+from car.train import test
 import numpy as np
 
 
@@ -26,9 +27,8 @@ if __name__ == "__main__":
     clf = SVC(C=10.0, kernel='rbf', gamma=1.0, class_weight='balanced')
     clf.fit(X_train, y_train)
  
-    from sklearn.metrics import classification_report
-    y_true, y_pred = y_test, clf.predict(X_test)
-    print(classification_report(y_true, y_pred))
+    test(clf, X_train, y_train)
+    test(clf, X_test, y_test)
  
     from car.train import save_model
     save_model(clf, "model_hnm.pkl")
