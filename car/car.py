@@ -38,8 +38,9 @@ class Car(object):
         self._box = (2*np.array(self._box) + np.array(prev_car._box)) / 3
         
         # 2. detection count
-        if self._detect_cnt <= DETECT_COUNTING:
-            self._detect_cnt += 1
+        self._detect_cnt = prev_car._detect_cnt + 1
+        if self._detect_cnt > DETECT_COUNTING:
+            self._detect_cnt = DETECT_COUNTING
 
     def undetect_update(self):
         # 1. undetection count
