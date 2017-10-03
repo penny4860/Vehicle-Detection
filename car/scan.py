@@ -54,7 +54,7 @@ class ImgScanner(object):
 
 class ImgPyramid(object):
      
-    def __init__(self, image, scale=0.75, min_y=96, min_x=96):
+    def __init__(self, image, scale=0.6, min_y=96, min_x=96):
         self.layer = image.copy()
         self.scale_for_original = 1.0
         
