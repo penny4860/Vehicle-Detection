@@ -27,7 +27,7 @@ class ImgDetector(object):
         self._start_y = 0
         
     
-    def run(self, image, start_pt=(0,300), do_heat_map=True):
+    def run(self, image, start_pt=(0,400), do_heat_map=True):
         """
         # Args
             image : ndarray, shape of (H, W, 3)
