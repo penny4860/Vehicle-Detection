@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import imageio
 from car.train import load_model
-from car.detect import ImgDetector
+from car.detect import ImgDetector, VideoDetector
 
 imageio.plugins.ffmpeg.download()
 
