@@ -23,7 +23,7 @@ if __name__ == "__main__":
     # {'kernel': 'rbf', 'gamma': 0.1, 'C': 10}
     # evaluate_params(X_train, y_train, X_test, y_test, tuned_parameters)
  
-    clf = SVC(C=10.0, kernel='rbf', gamma=1.0)
+    clf = SVC(C=10.0, kernel='rbf', gamma=1.0, class_weight='balanced')
     clf.fit(X_train, y_train)
  
     from sklearn.metrics import classification_report
