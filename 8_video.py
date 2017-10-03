@@ -2,24 +2,17 @@
 import imageio
 from car.train import load_model
 from car.detect import ImgDetector, VideoDetector
+from car.data import list_files, files_to_images
+from car.utils import plot_images
 
-imageio.plugins.ffmpeg.download()
 
-
-# Import everything needed to edit/save/watch video clips
-from moviepy.editor import VideoFileClip
-# from detector.framework import ImageFramework
-
-d = VideoDetector(ImgDetector(classifier=load_model("model_v3.pkl")))
-def process_image(image):
-    # d = ImgDetector(classifier=load_model("model_v4.pkl"))
-    img_draw = d.run(image, do_heat_map=True)
-    return img_draw
- 
 if __name__ == "__main__":
-    white_output = 'test_video_result.mp4'
-    clip1 = VideoFileClip("test_video.mp4")
-    white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
-    white_clip.write_videofile(white_output, audio=False)
+    
+    img_files = list_files("video", pattern="*.jpg", random_order=False)
+    imgs = files_to_images(img_files)
 
-    print("done")
+
+    d = VideoDetector(ImgDetector(classifier=load_model("model_v3.pkl")))
+    for img in imgs:
+        img_draw = d.run(img)
+        plot_images(img_draw)
