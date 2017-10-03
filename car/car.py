@@ -48,10 +48,13 @@ class Car(object):
             self._undetect_cnt += 1
 
     def get_status(self):
-        if self._detect_cnt > DETECT_COUNTING:
+        if self._detect_cnt >= DETECT_COUNTING:
             return "detect"
         else:
-            if self._undetect_cnt > DETECT_COUNTING:
+            if self._undetect_cnt >= DETECT_COUNTING:
                 return "undetect"
             else:
                 return "hold"
+
+    def get_box(self):
+        return np.array(self._box).astype(int)
