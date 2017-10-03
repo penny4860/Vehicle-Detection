@@ -87,8 +87,8 @@ class VideoDetector(object):
         for i, cur_car in enumerate(cars[:]):
             # matched
             if i in pairs[:, 0]:
-                matching_idx = pairs[:, 0].index(i)
-                prev_idx = pairs[matching_idx, 1]
+                matching_idx = np.where(pairs[:, 0] == i)
+                prev_idx = int(pairs[matching_idx, 1])
                 
                 self._prev_cars[prev_idx].detect_update(cur_car)
                 match_cars.append(self._prev_cars[prev_idx])
