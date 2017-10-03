@@ -64,7 +64,7 @@ class ImgPyramid(object):
         self._min_x = min_x
      
     def generate_next(self):
-        yield self.layer
+        # yield self.layer
  
         while True:
             h = int(self.layer.shape[0] * self._scale)
