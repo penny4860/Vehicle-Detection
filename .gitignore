@@ -1,5 +1,6 @@
 /.project
 /.settings
+/project_video
 dataset
 .pydevproject
 *.pyc
