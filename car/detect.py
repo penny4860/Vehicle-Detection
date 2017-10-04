@@ -21,6 +21,15 @@ class VideoDetector(object):
         for box in heat_boxes:
             cur_cars.append(Car(box))
         return cur_cars
+    
+    def _process_cur_cars(self, cars, pairs):
+        # 3. matching 된 현재 frame 에서의 box를 처리
+        for i, cur_car in enumerate(cars):
+            # matched
+            if i in pairs[:, 0]:
+                matching_idx = np.where(pairs[:, 0] == i)[0][0]
+                prev_idx = int(pairs[matching_idx, 1])
+                cur_car.detect_update(self._prev_cars[prev_idx])
 
     def run(self, img):
         _ = self._img_detector.run(img, do_heat_map=True)
@@ -31,15 +40,10 @@ class VideoDetector(object):
         
         # 2. 이전 frame 과 matching
         pairs = match(cars, self._prev_cars) # [ (현재, 과거), .... ]
-        
-        # 3. matching 된 현재 frame 에서의 box를 처리
-        for i, cur_car in enumerate(cars):
-            # matched
-            if i in pairs[:, 0]:
-                matching_idx = np.where(pairs[:, 0] == i)[0][0]
-                prev_idx = int(pairs[matching_idx, 1])
-                cur_car.detect_update(self._prev_cars[prev_idx])
 
+        # 3. matching 된 현재 frame 에서의 box를 처리        
+        self._process_cur_cars(cars, pairs)
+        
         # 4. unmatching 된 과거 frame 에서의 box를 처리
         for i, prev_car in enumerate(self._prev_cars):
             # unmatched
