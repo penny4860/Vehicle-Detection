@@ -20,10 +20,15 @@ def get_patch_samples(src_dir, dst_dir):
         for box in boxes:
             x1, y1, x2, y2 = box
             
-            for _ in range(4):
-                offset_x = random.randint(-8, 8)
-                offset_y = random.randint(-8, 8)
+            for i in range(5):
+                if i == 0: 
+                    offset_x = 0
+                    offset_y = 0
                 
+                else:
+                    offset_x = random.randint(-8, 8)
+                    offset_y = random.randint(-8, 8)
+                    
                 xx1 = offset_x + x1
                 xx2 = offset_x + x2
                 yy1 = offset_y + y1
@@ -37,4 +42,4 @@ def get_patch_samples(src_dir, dst_dir):
                     cnt += 1
 
 if __name__ == "__main__":
-    get_patch_samples("video", "samples")
+    get_patch_samples("video", "dataset//extra-samples")
