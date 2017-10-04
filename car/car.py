@@ -13,7 +13,7 @@ def match(cars, prev_cars):
     return matching_pairs   # (current_idx, prev_index)-ordered
 
 
-DETECT_COUNTING = 2
+DETECT_COUNTING = 3
 class Car(object):
     def __init__(self, box):
         self._box = box
