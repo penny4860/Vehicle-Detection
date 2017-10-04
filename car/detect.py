@@ -23,6 +23,7 @@ class VideoDetector(object):
         return cur_cars
     
     def _process_cur_cars(self, cars, pairs):
+        """current cars 중에서 matching 된 car 를 update"""
         
         matching_car_idx = pairs[:, 0]
         matching_prev_car_idx = pairs[:, 1]
@@ -33,6 +34,16 @@ class VideoDetector(object):
                 arr_index = np.where(matching_car_idx == i)[0][0]
                 prev_idx = int(matching_prev_car_idx[arr_index])
                 cur_car.detect_update(self._prev_cars[prev_idx])
+
+    def _process_prev_cars(self, cars, pairs):
+        """previous cars 중에서 unmatching 된 car 를 update"""
+
+        for i, prev_car in enumerate(self._prev_cars):
+            # unmatched
+            if i not in pairs[:, 1]:
+                prev_car.undetect_update()
+                if prev_car.get_status() == "hold":
+                    cars.append(prev_car)
 
     def run(self, img):
         _ = self._img_detector.run(img, do_heat_map=True)
@@ -48,12 +59,7 @@ class VideoDetector(object):
         self._process_cur_cars(cars, pairs)
         
         # 4. unmatching 된 과거 frame 에서의 box를 처리
-        for i, prev_car in enumerate(self._prev_cars):
-            # unmatched
-            if i not in pairs[:, 1]:
-                prev_car.undetect_update()
-                if prev_car.get_status() == "hold":
-                    cars.append(prev_car)
+        self._process_prev_cars(cars, pairs)
         
         print("cur cars", len(cars), end=", ")
         boxes = []
