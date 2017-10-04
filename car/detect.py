@@ -59,19 +59,19 @@ class VideoDetector(object):
         self._prev_cars = copy.deepcopy(cars)
         
         # 
-        img_clone = self._draw_boxes(img, self._img_detector.heat_boxes, (255, 0, 0))
-        img_video = self._draw_boxes(img_clone, boxes)
-        return img_clone
+        img_clone = self._draw_boxes(img, self._img_detector.heat_boxes, (255, 0, 0), 8)
+        img_video = self._draw_boxes(img_clone, boxes, (0, 255, 0), 2)
+        return img_video
 
 
-    def _draw_boxes(self, image, boxes, color=(0, 255, 0)):
+    def _draw_boxes(self, image, boxes, color=(0, 255, 0), thickess=2):
         """Draw detected boxes to an image"""
          
         clone = image.copy()
         for box in boxes:
             p1 = (box[0], box[1])
             p2 = (box[2], box[3])
-            cv2.rectangle(clone, p1, p2, color, 2)
+            cv2.rectangle(clone, p1, p2, color, thickess)
         return clone
 
  
