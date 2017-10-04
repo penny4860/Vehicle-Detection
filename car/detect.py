@@ -23,12 +23,15 @@ class VideoDetector(object):
         return cur_cars
     
     def _process_cur_cars(self, cars, pairs):
-        # 3. matching 된 현재 frame 에서의 box를 처리
+        
+        matching_car_idx = pairs[:, 0]
+        matching_prev_car_idx = pairs[:, 1]
+        
         for i, cur_car in enumerate(cars):
             # matched
-            if i in pairs[:, 0]:
-                matching_idx = np.where(pairs[:, 0] == i)[0][0]
-                prev_idx = int(pairs[matching_idx, 1])
+            if i in matching_car_idx:
+                arr_index = np.where(matching_car_idx == i)[0][0]
+                prev_idx = int(matching_prev_car_idx[arr_index])
                 cur_car.detect_update(self._prev_cars[prev_idx])
 
     def run(self, img):
