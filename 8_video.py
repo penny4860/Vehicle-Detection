@@ -11,7 +11,7 @@ from moviepy.editor import VideoFileClip
 # from detector.framework import ImageFramework
 
 def process_image(image):
-    d = ImgDetector(classifier=load_model("model_hnm.pkl"))
+    d = ImgDetector(classifier=load_model("model_v4.pkl"))
     img_draw = d.run(image, do_heat_map=True)
     return img_draw
  
