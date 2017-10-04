@@ -73,11 +73,11 @@ class VideoDetector(object):
         
         # 
         img_clone = self._draw_boxes(img, self._img_detector.heat_boxes, (255, 0, 0), 8)
-        img_video = self._draw_boxes(img_clone, boxes, (0, 255, 0), 2)
+        img_video = self._draw_boxes(img_clone, boxes, (0, 255, 0), 2, True)
         return img_video
 
 
-    def _draw_boxes(self, image, boxes, color=(0, 255, 0), thickess=2):
+    def _draw_boxes(self, image, boxes, color=(0, 255, 0), thickess=2, mark_group=False):
         """Draw detected boxes to an image"""
          
         clone = image.copy()
@@ -85,8 +85,8 @@ class VideoDetector(object):
             p1 = (box[0], box[1])
             p2 = (box[2], box[3])
             cv2.rectangle(clone, p1, p2, color, thickess)
-            cv2.putText(clone, "{}-th car".format(i+1), p1, cv2.FONT_HERSHEY_SIMPLEX, 2, color)
-
+            if mark_group:
+                cv2.putText(clone, "car:{}".format(i+1), p1, cv2.FONT_HERSHEY_SIMPLEX, 1, color, 4)
         return clone
 
  
