@@ -81,10 +81,12 @@ class VideoDetector(object):
         """Draw detected boxes to an image"""
          
         clone = image.copy()
-        for box in boxes:
+        for i, box in enumerate(boxes):
             p1 = (box[0], box[1])
             p2 = (box[2], box[3])
             cv2.rectangle(clone, p1, p2, color, thickess)
+            cv2.putText(clone, "{}-th car".format(i+1), p1, cv2.FONT_HERSHEY_SIMPLEX, 2, color)
+
         return clone
 
  
