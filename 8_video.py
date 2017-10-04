@@ -23,14 +23,15 @@ if __name__ == "__main__":
     img_files = list_files("video", pattern="*.jpg", random_order=False, recursive_option=False)
     imgs = files_to_images(img_files)
     
-    d = VideoDetector(ImgDetector(classifier=load_model("model_v3.pkl")))
+    d = VideoDetector(ImgDetector(classifier=load_model("model_v4.pkl")))
+    # d = ImgDetector(classifier=load_model("model_v4.pkl"))
     
     count = 0
     for img in imgs:
         img_draw = d.run(img)
         
         count_str = "{}".format(count).zfill(5)
-        filename = "video//img_detect_{}.jpg".format(count_str)
+        filename = "video//img_detect//{}.jpg".format(count_str)
         cv2.imwrite(filename, img_draw)
         print(filename)
         count += 1
