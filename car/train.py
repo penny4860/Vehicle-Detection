@@ -2,6 +2,12 @@
 from sklearn.svm import SVC
 
 
+def test(clf, X, y):
+    from sklearn.metrics import classification_report
+    y_true, y_pred = y, clf.predict(X)
+    print(classification_report(y_true, y_pred))
+
+
 def evaluate_params(X, y, X_test, y_test, params):
     # tuned_parameters = [{'kernel': ['rbf'], 'gamma': [0.1, 1], 'C': [10]}]
     from sklearn.model_selection import GridSearchCV

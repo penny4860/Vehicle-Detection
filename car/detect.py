@@ -27,7 +27,7 @@ class ImgDetector(object):
         self._start_y = 0
         
     
-    def run(self, image, start_pt=(300,0), do_heat_map=True):
+    def run(self, image, start_pt=(0,400), end_pt=(1280, 400+256), do_heat_map=True):
         """
         # Args
             image : ndarray, shape of (H, W, 3)
@@ -43,7 +43,7 @@ class ImgDetector(object):
         self.heat_boxes = []
         
         # 1. Run offset handling operation
-        scan_img = self._run_offset(image, start_pt)
+        scan_img = self._run_offset(image, start_pt, end_pt)
 
         # 2. Multiple sized sliding window scanner
         self._slider = MultipleScanner(scan_img)
@@ -64,10 +64,14 @@ class ImgDetector(object):
         drawed = self._draw_boxes(image, self.heat_boxes)
         return drawed
 
-    def _run_offset(self, image, start_pt):
+    def _run_offset(self, image, start_pt, end_pt):
         self._start_x = start_pt[0]
         self._start_y = start_pt[1]
-        return image[start_pt[1]:, start_pt[0]:, :]
+        
+        if end_pt is not None:
+            return image[start_pt[1]:end_pt[1], start_pt[0]:end_pt[0], :]
+        else:
+            return image[start_pt[1]:, start_pt[0]:, :]
     
     def _get_feature_vector(self):
         if self._slider.is_updated_layer():
