@@ -14,10 +14,13 @@ class Box(object):
     def get_bb(self):
         return self.x1, self.y1, self.x2, self.y2
     
-    def get_point(self):
+    def get_px(self):
         px = (self.x1 + self.x2) / 2 
+        return px
+    
+    def get_py(self):
         py = (self.y1 + self.y2) / 2
-        return px, py
+        return py
 
     def get_scale(self):
         w = self.x2 - self.x1 
@@ -33,13 +36,21 @@ class Box(object):
 
 class BoxTracker(object):
     
-    _N_MEAS = 4         # (px, py, scale, ratio)
-    _N_STATE = 7        # (px, py, scale, ratio, vx, vy, vs)
+    _N_MEAS = 4         # (px, py, scale, ratio)-ordered
+    _N_STATE = 7        # (px, py, scale, ratio, vx, vy, vs)-ordered
     
-    def __init__(self):
-        self._kf = self._build_kf()
-    
-    def _build_kf(self):
+    def __init__(self, init_box):
+        self._kf = self._build_kf(init_box)
+
+    def _box_to_z(self, box):
+        px = box.get_px()
+        py = box.get_py()
+        scale = box.get_scale()
+        ratio = box.get_ratio()
+        z = np.array([px, py, scale, ratio]).reshape(-1,1)
+        return z
+
+    def _build_kf(self, init_box, Q_scale=0.01, R_scale=10.0):
         kf = KalmanFilter(dim_x=self._N_STATE,
                           dim_z=self._N_MEAS)
         kf.F = np.array([[1,0,0,0,1,0,0],
@@ -53,15 +64,21 @@ class BoxTracker(object):
                          [0,1,0,0,0,0,0],
                          [0,0,1,0,0,0,0],
                          [0,0,0,1,0,0,0]])
-        Q_scale = 0.01
-        R_scale = 10.0
         Q = np.zeros_like(kf.F)
         Q[self._N_MEAS:, self._N_MEAS:] = Q_scale
         R = np.eye(self._N_MEAS) * R_scale
         
         kf.Q = Q
         kf.R = R
-        # kf.x = np.array([0, 0, 0, 0]).reshape(-1,1)
+        
+        init_z = self._box_to_z(init_box)
+        kf.x = np.array([init_z[0,0],
+                         init_z[1,0],
+                         init_z[2,0],
+                         init_z[3,0],
+                         0,
+                         0,
+                         0]).reshape(-1,1)
         return kf
     
     def run(self, measured):
