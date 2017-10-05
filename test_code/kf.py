@@ -25,22 +25,26 @@ class Box(object):
 
     def get_bb(self):
         return int(self.x1), int(self.y1), int(self.x2), int(self.y2)
+
+    def get_z(self):
+        z = np.array([self._px(), self._py(), self._scale(), self._ratio()]).reshape(-1,1)
+        return z
     
-    def get_px(self):
+    def _px(self):
         px = (self.x1 + self.x2) / 2 
         return px
     
-    def get_py(self):
+    def _py(self):
         py = (self.y1 + self.y2) / 2
         return py
 
-    def get_scale(self):
+    def _scale(self):
         w = self.x2 - self.x1 
         h = self.y2 - self.y1
         scale = w*h
         return scale
 
-    def get_ratio(self):
+    def _ratio(self):
         w = self.x2 - self.x1
         h = self.y2 - self.y1
         ratio = float(w)/h
@@ -54,14 +58,6 @@ class BoxTracker(object):
     
     def __init__(self, init_box):
         self._kf = self._build_kf(init_box)
-
-    def _box_to_z(self, box):
-        px = box.get_px()
-        py = box.get_py()
-        scale = box.get_scale()
-        ratio = box.get_ratio()
-        z = np.array([px, py, scale, ratio]).reshape(-1,1)
-        return z
 
     def _build_kf(self, init_box, Q_scale=0.01, R_scale=10.0):
         kf = KalmanFilter(dim_x=self._N_STATE,
@@ -84,9 +80,8 @@ class BoxTracker(object):
         kf.Q = Q
         kf.R = R
         
-        init_z = self._box_to_z(init_box)
         kf.x = np.zeros((self._N_STATE, 1))
-        kf.x[:4,:] = init_z
+        kf.x[:4,:] = init_box.get_z()
         return kf
     
     def run(self, box=None):
@@ -101,7 +96,7 @@ class BoxTracker(object):
         # predict_state = self._kf.x
         
         if box is not None:
-            z = self._box_to_z(box)
+            z = box.get_z()
             self._kf.update(z)
             
         filtered_box = Box.from_z(*self._kf.x[:4,0])
