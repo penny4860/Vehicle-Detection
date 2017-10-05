@@ -17,18 +17,25 @@ import numpy as np
 # print(kf.P)
 # print(kf.Q)
 
-
-kf = KalmanFilter(dim_x=4, dim_z=2)
+n_measurements = 2
+kf = KalmanFilter(dim_x=4, dim_z=n_measurements)
 kf.F = np.array([[1,0,1,0],
                  [0,1,0,1],
                  [0,0,1,0],
                  [0,0,0,1]])
 kf.H = np.array([[1,0,0,0],
                  [0,1,0,0]])
+Q_std = 0.01
+Q = np.zeros_like(kf.F)
+Q[1,1] = Q_std**2
+Q[3,3] = Q_std**2
 
-print(kf.P)
-print(kf.R)
-print(kf.Q)
+R_std = 10.0
+R = np.eye(n_measurements) * R_std**2
+
+kf.Q = Q
+kf.R = R
+kf.x = np.array([0, 0, 0, 0]).reshape(-1,1)
 
 import matplotlib.pyplot as plt
 def demo_kalman_xy():
