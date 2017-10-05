@@ -55,8 +55,7 @@ class VideoDetector(object):
             
             if tracking_idx is None:
                 # create new tracker
-                # Todo : BoxTracker 생성자 정리
-                box_tracker = BoxTracker(detect_boxes[i, 0], detect_boxes[i, 1], detect_boxes[i, 2], detect_boxes[i, 3], len(self._box_trackers)+1)
+                box_tracker = BoxTracker(Box(*detect_boxes[i]), len(self._box_trackers)+1)
                 new_box_trackers.append(box_tracker)
             else:
                 # run tracker by measured detection box
