@@ -64,7 +64,7 @@ class VideoDetector(object):
 
         # 5. tracking but unmatched traker process
         for i, _ in enumerate(self._box_trackers):
-            idx = box_matcher.match_idx_of_box2_idx(i)
+            idx, iou = box_matcher.match_idx_of_box2_idx(i)
 
             # missing target
             if idx is None:
