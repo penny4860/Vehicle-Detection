@@ -19,28 +19,19 @@ def files_to_images(files):
 
 
 if __name__ == "__main__":
-    files = ["project_video//00642.jpg",
-             "project_video//00643.jpg",
-             "project_video//00644.jpg",
-             "project_video//00645.jpg",
-             "project_video//00646.jpg",
-             "project_video//00647.jpg",
-             "project_video//00648.jpg"]
+    img_files = list_files("project_video", pattern="*.jpg", random_order=False, recursive_option=False)
+    imgs = files_to_images(img_files)
     
     d = VideoDetector(ImgDetector(classifier=load_model("model_v4.pkl")))
     # d = ImgDetector(classifier=load_model("model_v4.pkl"))
     
-    img_detected = []
     count = 0
-    for fname in files:
-        img = cv2.imread(fname)
+    for img in imgs:
         img_draw = d.run(img)
-        plot_images([img, img_draw])
         
-        
-#         count_str = "{}".format(count).zfill(5)
-#         filename = "{}.jpg".format(count_str)
-#         cv2.imwrite(filename, img_draw)
-#         print(filename)
-#         count += 1
+        count_str = "{}".format(count).zfill(5)
+        filename = "project_video//video_detect//{}.jpg".format(count_str)
+        cv2.imwrite(filename, img_draw)
+        print(filename)
+        count += 1
 
