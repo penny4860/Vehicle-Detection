@@ -39,7 +39,7 @@ class VideoDetector(object):
     def run(self, img):
 
         # 1. run still image detection framework
-        detect_boxes = self._detect(img)
+        detect_boxes = np.array(self._detect(img))
 
         # 2. get tracking boxes
         tracking_boxes = self._get_pred_boxes()
@@ -55,7 +55,8 @@ class VideoDetector(object):
             
             if tracking_idx is None:
                 # create new tracker
-                box_tracker = BoxTracker(detect_boxes[0], detect_boxes[1], detect_boxes[2], detect_boxes[3], len(self._box_trackers)+1)
+                # Todo : BoxTracker 생성자 정리
+                box_tracker = BoxTracker(detect_boxes[i, 0], detect_boxes[i, 1], detect_boxes[i, 2], detect_boxes[i, 3], len(self._box_trackers)+1)
                 new_box_trackers.append(box_tracker)
             else:
                 # run tracker by measured detection box
