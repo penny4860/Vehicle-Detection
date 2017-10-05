@@ -64,7 +64,6 @@ class BoxMatcher(object):
         box1_matching_idx_list = self._match_pairs[:, 0]
         box2_matching_idx_list = self._match_pairs[:, 1]
         box1_idx = self._find(box2_idx, box2_matching_idx_list, box1_matching_idx_list)
-        iou = self._iou_matrix[box1_idx, box2_idx]
         if box1_idx is None:
             iou = 0
         else:
