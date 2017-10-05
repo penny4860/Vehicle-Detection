@@ -51,13 +51,19 @@ class Box(object):
         return ratio
 
 
+DRAW_THD = 3
+UNTRACK_THD = 5
 class BoxTracker(object):
     
     _N_MEAS = 4         # (px, py, scale, ratio)-ordered
     _N_STATE = 7        # (px, py, scale, ratio, vx, vy, vs)-ordered
     
-    def __init__(self, init_box):
+    def __init__(self, init_box, group_number=1):
         self._kf = self._build_kf(init_box)
+        
+        self.group_number = group_number
+        self.detect_count = 1
+        self.miss_count = 0
 
     def _build_kf(self, init_box, Q_scale=0.01, R_scale=10.0):
         kf = KalmanFilter(dim_x=self._N_STATE,
@@ -84,7 +90,12 @@ class BoxTracker(object):
         kf.x[:4,:] = init_box.get_z()
         return kf
     
-    def run(self, box=None):
+    def predict(self):
+        self._kf.predict()
+        predict_box = Box.from_z(*self._kf.x[:4,0])
+        return predict_box
+    
+    def update(self, box=None):
         """
         # Args
             box : Box instance
@@ -93,20 +104,29 @@ class BoxTracker(object):
         # Returns
             filtered_box : Box instance
         """
-        self._kf.predict()
-        # predict_state = self._kf.x
-        
         if box is not None:
+            self.detect_count += 1
             z = box.get_z()
             self._kf.update(z)
             
         filtered_box = Box.from_z(*self._kf.x[:4,0])
         return filtered_box
     
+    def miss(self):
+        self.miss_count += 1
+    
     def get_bb(self):
         box = Box.from_z(*self._kf.x[:4,0])
         bounding_box = box.get_bb()
         return bounding_box
+
+    def is_draw(self):
+        if self.detect_count >= DRAW_THD:
+            return True
+
+    def is_delete(self):
+        if self.miss_count >= UNTRACK_THD:
+            return True
 
 
 if __name__ == "__main__":
