@@ -110,7 +110,7 @@ class ImgDetector(object):
         self._start_y = 0
          
      
-    def run(self, image, start_pt=(0,400), end_pt=(1280, 400+256), do_heat_map=True):
+    def run(self, image, start_pt=(640,400), end_pt=(1280, 400+256), do_heat_map=True):
         """
         # Args
             image : ndarray, shape of (H, W, 3)
