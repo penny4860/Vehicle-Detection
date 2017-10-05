@@ -14,13 +14,15 @@ from car.match import BoxMatcher
 
 import numpy as np
 
- 
+
+MAX_TRACKERS = 10
 class VideoDetector(object):
     def __init__(self, img_detector):
         self._img_detector = img_detector
 
         # BoxTracker instances
         self._box_trackers = []
+        self._group_idxes = np.array([False]*MAX_TRACKERS)
     
     def _detect(self, img):
         _ = self._img_detector.run(img, do_heat_map=True)
@@ -36,6 +38,11 @@ class VideoDetector(object):
         tracking_boxes = np.array(tracking_boxes)
         return tracking_boxes
 
+    def _assign_group_index(self):
+        idx =  np.where(self._group_idxes == False)[0][0]
+        self._group_idxes[idx] = True
+        return idx
+        
     def run(self, img):
 
         # 1. run still image detection framework
@@ -55,13 +62,15 @@ class VideoDetector(object):
             
             if tracking_idx is None:
                 # create new tracker
-                box_tracker = BoxTracker(Box(*detect_boxes[i]), len(self._box_trackers)+1)
+                box_tracker = BoxTracker(Box(*detect_boxes[i]), self._assign_group_index())
                 new_box_trackers.append(box_tracker)
             else:
                 # run tracker by measured detection box
                 measurement_box = Box(*detect_boxes[i])
                 self._box_trackers[tracking_idx].update(measurement_box)
-
+        
+        print("stiil image box: {}, tracking box: {}".format(len(detect_boxes), len(tracking_boxes)))
+        
         # 5. tracking but unmatched traker process
         for i, _ in enumerate(self._box_trackers):
             idx, iou = box_matcher.match_idx_of_box2_idx(i)
@@ -75,6 +84,7 @@ class VideoDetector(object):
         # 6. delete tracker in trackers
         for tracker in self._box_trackers[:]:
             if tracker.is_delete():
+                self._group_idxes[tracker.group_number] = False
                 self._box_trackers.remove(tracker)
 
         img_clone = self._draw_boxes(img, self._img_detector.heat_boxes, (255, 0, 0), 8)
