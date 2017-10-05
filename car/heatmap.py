@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage.measurements import label
 
 class HeatMap(object):
-    def __init__(self, threshold=1):
+    def __init__(self, threshold=2):
         self._threshold = threshold
         self._heat_map = None
         self._heat_bin = None
