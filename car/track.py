@@ -51,7 +51,7 @@ class Box(object):
         return ratio
 
 
-DRAW_THD = 3
+DRAW_THD = 5
 UNTRACK_THD = 5
 class BoxTracker(object):
     
@@ -125,9 +125,8 @@ class BoxTracker(object):
             return True
 
     def is_delete(self):
-        if self.miss_count >= UNTRACK_THD:
+        if self.miss_count > self.detect_count or self.miss_count >= UNTRACK_THD:
             return True
-
 
 if __name__ == "__main__":
     
