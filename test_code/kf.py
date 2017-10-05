@@ -11,6 +11,18 @@ class Box(object):
         self.x2 = x2
         self.y2 = y2
     
+    @classmethod
+    def from_z(cls, px, py, scale, ratio):
+        import math
+        w = math.sqrt(scale * ratio)
+        h = scale / w
+        x1 = px - w/2
+        x2 = px + w/2
+        y1 = py - h/2
+        y2 = py + h/2
+        box = Box(x1, y1, x2, y2)
+        return box
+
     def get_bb(self):
         return int(self.x1), int(self.y1), int(self.x2), int(self.y2)
     
@@ -50,18 +62,6 @@ class BoxTracker(object):
         ratio = box.get_ratio()
         z = np.array([px, py, scale, ratio]).reshape(-1,1)
         return z
-
-    def _state_to_box(self, state):
-        import math
-        px, py, scale, ratio = state[:4,0]
-        w = math.sqrt(scale * ratio)
-        h = scale / w
-        x1 = px - w/2
-        x2 = px + w/2
-        y1 = py - h/2
-        y2 = py + h/2
-        box = Box(x1, y1, x2, y2)
-        return box
 
     def _build_kf(self, init_box, Q_scale=0.01, R_scale=10.0):
         kf = KalmanFilter(dim_x=self._N_STATE,
@@ -103,8 +103,8 @@ class BoxTracker(object):
         if box is not None:
             z = self._box_to_z(box)
             self._kf.update(z)
-        
-        filtered_box = self._state_to_box(self._kf.x)
+            
+        filtered_box = Box.from_z(*self._kf.x[:4,0])
         return filtered_box
 
 if __name__ == "__main__":
