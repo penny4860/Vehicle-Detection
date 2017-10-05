@@ -88,6 +88,7 @@ class BoxTracker(object):
         """
         # Args
             box : Box instance
+                in the case of no matching box, box argument is None
         
         # Returns
             filtered_box : Box instance
@@ -101,6 +102,12 @@ class BoxTracker(object):
             
         filtered_box = Box.from_z(*self._kf.x[:4,0])
         return filtered_box
+    
+    def get_bb(self):
+        box = Box.from_z(*self._kf.x[:4,0])
+        bounding_box = box.get_bb()
+        return bounding_box
+
 
 if __name__ == "__main__":
     
