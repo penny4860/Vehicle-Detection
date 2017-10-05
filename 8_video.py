@@ -1,24 +1,37 @@
 # -*- coding: utf-8 -*-
 import imageio
 from car.train import load_model
-from car.detect import ImgDetector
+from car.detect import ImgDetector, VideoDetector
+from car.data import list_files
+from car.utils import plot_images
 
-imageio.plugins.ffmpeg.download()
+import cv2
 
 
-# Import everything needed to edit/save/watch video clips
-from moviepy.editor import VideoFileClip
-# from detector.framework import ImageFramework
+def files_to_images(files):
+    import numpy as np
+    images = []
+    for filename in files:
+        image = cv2.imread(filename)
+        images.append(image)
+    images = np.array(images)
+    return images
 
-def process_image(image):
-    d = ImgDetector(classifier=load_model("model_v4.pkl"))
-    img_draw = d.run(image, do_heat_map=True)
-    return img_draw
- 
+
 if __name__ == "__main__":
-    white_output = 'test_video_result.mp4'
-    clip1 = VideoFileClip("test_video.mp4")
-    white_clip = clip1.fl_image(process_image) #NOTE: this function expects color images!!
-    white_clip.write_videofile(white_output, audio=False)
+    img_files = list_files("project_video", pattern="*.jpg", random_order=False, recursive_option=False)
+    imgs = files_to_images(img_files)
+    
+    d = VideoDetector(ImgDetector(classifier=load_model("model_v4.pkl")))
+    # d = ImgDetector(classifier=load_model("model_v4.pkl"))
+    
+    count = 0
+    for img in imgs:
+        img_draw = d.run(img)
+        
+        count_str = "{}".format(count).zfill(5)
+        filename = "project_video//video_detect//{}.jpg".format(count_str)
+        cv2.imwrite(filename, img_draw)
+        print(filename)
+        count += 1
 
-    print("done")

@@ -6,27 +6,110 @@ from car.desc import HogDesc, HogMap
 from car.train import load_model
 from car.scan import MultipleScanner
 from car.heatmap import HeatMap
+from car.car import Car, match
 
-class ImgDetector(object):
-    
-    def __init__(self, classifier, heat_map=HeatMap()):
+import numpy as np
+
+ 
+class VideoDetector(object):
+    def __init__(self, img_detector):
+        self._img_detector = img_detector
+        self._prev_cars = []
         
+    def _create_cur_cars(self, heat_boxes):
+        cur_cars = []
+        for box in heat_boxes:
+            cur_cars.append(Car(box))
+        return cur_cars
+    
+    def _process_cur_cars(self, cars, pairs):
+        """current cars 중에서 matching 된 car 를 update"""
+        
+        matching_car_idx = pairs[:, 0]
+        matching_prev_car_idx = pairs[:, 1]
+        
+        for i, cur_car in enumerate(cars):
+            # matched
+            if i in matching_car_idx:
+                arr_index = np.where(matching_car_idx == i)[0][0]
+                prev_idx = int(matching_prev_car_idx[arr_index])
+                cur_car.detect_update(self._prev_cars[prev_idx])
+
+    def _process_prev_cars(self, cars, pairs):
+        """previous cars 중에서 unmatching 된 car 를 update"""
+
+        for i, prev_car in enumerate(self._prev_cars):
+            # unmatched
+            if i not in pairs[:, 1]:
+                prev_car.undetect_update()
+                if prev_car.get_status() == "hold":
+                    cars.append(prev_car)
+
+    def run(self, img):
+        _ = self._img_detector.run(img, do_heat_map=True)
+        
+        # 1. 인식된 객체에 대한 list 생성
+        cars = self._create_cur_cars(self._img_detector.heat_boxes)
+        print("heat boxes", len(cars), end=", ")
+        
+        # 2. 이전 frame 과 matching
+        pairs = match(cars, self._prev_cars) # [ (현재, 과거), .... ]
+
+        # 3. matching 된 현재 frame 에서의 box를 처리        
+        self._process_cur_cars(cars, pairs)
+        
+        # 4. unmatching 된 과거 frame 에서의 box를 처리
+        self._process_prev_cars(cars, pairs)
+        
+        print("cur cars", len(cars), end=", ")
+        boxes = []
+        for car in cars:
+            if car.get_status() == "detect":
+                boxes.append(car.get_box())
+        print("draw boxes", len(boxes), end=", ")
+        
+        import copy
+        self._prev_cars = copy.deepcopy(cars)
+        
+        # 
+        img_clone = self._draw_boxes(img, self._img_detector.heat_boxes, (255, 0, 0), 8)
+        img_video = self._draw_boxes(img_clone, boxes, (0, 255, 0), 2, True)
+        return img_video
+
+
+    def _draw_boxes(self, image, boxes, color=(0, 255, 0), thickess=2, mark_group=False):
+        """Draw detected boxes to an image"""
+         
+        clone = image.copy()
+        for i, box in enumerate(boxes):
+            p1 = (box[0], box[1])
+            p2 = (box[2], box[3])
+            cv2.rectangle(clone, p1, p2, color, thickess)
+            if mark_group:
+                cv2.putText(clone, "car:{}".format(i+1), p1, cv2.FONT_HERSHEY_SIMPLEX, 1, color, 4)
+        return clone
+
+ 
+class ImgDetector(object):
+     
+    def __init__(self, classifier, heat_map=HeatMap()):
+         
         # Todo : Slider class 를 외부에서 주입받도록 수정하자.
         self._slider = None
         self._heat_map = heat_map
         self._clf = classifier
-        
+         
         # Todo : 외부에서 주입
         self._desc_map = HogMap(HogDesc())
-        
+         
         self.detect_boxes = []
         self.heat_boxes = []
         self._feature_map = None
-        
+         
         self._start_x = 0
         self._start_y = 0
-        
-    
+         
+     
     def run(self, image, start_pt=(0,400), end_pt=(1280, 400+256), do_heat_map=True):
         """
         # Args
@@ -34,54 +117,54 @@ class ImgDetector(object):
                 RGB-ordered image
             start_pt : tuple
                 (x, y)
-
+ 
         # Returns
             drawed : ndarray, same size of image
                 Image with patch recognized in input image        
         """
         self.detect_boxes = []
         self.heat_boxes = []
-        
+         
         # 1. Run offset handling operation
         scan_img = self._run_offset(image, start_pt, end_pt)
-
+ 
         # 2. Multiple sized sliding window scanner
         self._slider = MultipleScanner(scan_img)
         for _ in self._slider.generate_next():
-            
+             
             # 3. Get feature vector and run classifier
             feature_vector = self._get_feature_vector()
             if self._clf.predict(feature_vector) == 1.0:
                 self._set_detect_boxes()
-
+ 
         # 4. Run heat map operation        
         if do_heat_map:
             self.heat_boxes = self._heat_map.get_boxes(self.detect_boxes, image.shape[1], image.shape[0])
         else:
             self.heat_boxes = self.detect_boxes
-        
+         
         # 5. Draw detected boxes in the input image & return it
         drawed = self._draw_boxes(image, self.heat_boxes)
         return drawed
-
+ 
     def _run_offset(self, image, start_pt, end_pt):
         self._start_x = start_pt[0]
         self._start_y = start_pt[1]
-        
+         
         if end_pt is not None:
             return image[start_pt[1]:end_pt[1], start_pt[0]:end_pt[0], :]
         else:
             return image[start_pt[1]:, start_pt[0]:, :]
-    
+     
     def _get_feature_vector(self):
         if self._slider.is_updated_layer():
             layer = cv2.cvtColor(self._slider.layer, cv2.COLOR_RGB2GRAY)
             self._desc_map.set_features(layer)
-
+ 
         start_pt, _ = self._slider.get_pyramid_bb()
         feature_vector = self._desc_map.get_features(start_pt[0], start_pt[1])
         return feature_vector
-
+ 
     def _set_detect_boxes(self):
         """Set detected box coordinate"""
         # Get current box coordinate & Draw
@@ -93,10 +176,10 @@ class ImgDetector(object):
                x2 + self._start_x,
                y2 + self._start_y)
         self.detect_boxes.append(box)
-
+ 
     def _draw_boxes(self, image, boxes):
         """Draw detected boxes to an image"""
-        
+         
         clone = image.copy()
         for box in boxes:
             p1 = (box[0], box[1])
@@ -106,12 +189,8 @@ class ImgDetector(object):
 
         
 if __name__ == "__main__":
-    import matplotlib.pyplot as plt
-    img = plt.imread("..//test_images//test1.jpg")
-    d = ImgDetector(classifier=load_model("..//model.pkl"))
-    drawn = d.run(img, (0, 300))
-
-    plt.imshow(drawn)
-    plt.show()
+    prev_cars = [Car([500,500, 664, 664]), Car([100,100, 164, 164]), Car([300,300, 364, 364])]
+    cars = [Car([110,110, 174, 174]), Car([310,310, 374, 374])]
+    print(match(cars, prev_cars))
 
 
