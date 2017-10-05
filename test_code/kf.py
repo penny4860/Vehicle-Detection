@@ -1,62 +1,121 @@
 
 from filterpy.kalman import KalmanFilter
 import numpy as np
+np.set_printoptions(precision=2, suppress=True)
+
+class Box(object):
     
-# #define constant velocity model
-# kf = KalmanFilter(dim_x=7, dim_z=4)
-# kf.F = np.array([[1,0,0,0,1,0,0],[0,1,0,0,0,1,0],[0,0,1,0,0,0,1],[0,0,0,1,0,0,0],  [0,0,0,0,1,0,0],[0,0,0,0,0,1,0],[0,0,0,0,0,0,1]])
-# kf.H = np.array([[1,0,0,0,0,0,0],[0,1,0,0,0,0,0],[0,0,1,0,0,0,0],[0,0,0,1,0,0,0]])
-# 
-# kf.R[2:,2:] *= 10.
-# kf.P[4:,4:] *= 1000. #give high uncertainty to the unobservable initial velocities
-# kf.P *= 10.
-# kf.Q[-1,-1] *= 0.01
-# kf.Q[4:,4:] *= 0.01
-# 
-# print(kf.R)
-# print(kf.P)
-# print(kf.Q)
-
-n_measurements = 2
-kf = KalmanFilter(dim_x=4, dim_z=n_measurements)
-kf.F = np.array([[1,0,1,0],
-                 [0,1,0,1],
-                 [0,0,1,0],
-                 [0,0,0,1]])
-kf.H = np.array([[1,0,0,0],
-                 [0,1,0,0]])
-Q_std = 0.01
-Q = np.zeros_like(kf.F)
-Q[1,1] = Q_std**2
-Q[3,3] = Q_std**2
-
-R_std = 10.0
-R = np.eye(n_measurements) * R_std**2
-
-kf.Q = Q
-kf.R = R
-kf.x = np.array([0, 0, 0, 0]).reshape(-1,1)
-
-import matplotlib.pyplot as plt
-def demo_kalman_xy():
-    N = 100
-    true_x = np.linspace(0.0, 1000.0, N)
-    true_y = true_x
-    observed_x = true_x + 10*np.random.random(N)
-    observed_y = true_y + 10*np.random.random(N)
-    plt.plot(observed_x, observed_y, 'ro')
-    result = []
-
+    def __init__(self, x1, y1, x2, y2):
+        self.x1 = x1
+        self.y1 = y1
+        self.x2 = x2
+        self.y2 = y2
     
-    for meas in zip(observed_x, observed_y):
-        kf.predict()
-        z = np.array([meas[0], meas[1]]).reshape(-1,1)
-        kf.update(z)
-        result.append(kf.x[0:2])
-        print(meas, kf.x[0], kf.x[1])
+    @classmethod
+    def from_z(cls, px, py, scale, ratio):
+        import math
+        w = math.sqrt(scale * ratio)
+        h = scale / w
+        x1 = px - w/2
+        x2 = px + w/2
+        y1 = py - h/2
+        y2 = py + h/2
+        box = Box(x1, y1, x2, y2)
+        return box
+
+    def get_bb(self):
+        return int(self.x1), int(self.y1), int(self.x2), int(self.y2)
+
+    def get_z(self):
+        z = np.array([self._px(), self._py(), self._scale(), self._ratio()]).reshape(-1,1)
+        return z
+    
+    def _px(self):
+        px = (self.x1 + self.x2) / 2 
+        return px
+    
+    def _py(self):
+        py = (self.y1 + self.y2) / 2
+        return py
+
+    def _scale(self):
+        w = self.x2 - self.x1 
+        h = self.y2 - self.y1
+        scale = w*h
+        return scale
+
+    def _ratio(self):
+        w = self.x2 - self.x1
+        h = self.y2 - self.y1
+        ratio = float(w)/h
+        return ratio
+
+
+class BoxTracker(object):
+    
+    _N_MEAS = 4         # (px, py, scale, ratio)-ordered
+    _N_STATE = 7        # (px, py, scale, ratio, vx, vy, vs)-ordered
+    
+    def __init__(self, init_box):
+        self._kf = self._build_kf(init_box)
+
+    def _build_kf(self, init_box, Q_scale=0.01, R_scale=10.0):
+        kf = KalmanFilter(dim_x=self._N_STATE,
+                          dim_z=self._N_MEAS)
+        kf.F = np.array([[1,0,0,0,1,0,0],
+                         [0,1,0,0,0,1,0],
+                         [0,0,1,0,0,0,1],
+                         [0,0,0,1,0,0,0],
+                         [0,0,0,0,1,0,0],
+                         [0,0,0,0,0,1,0],
+                         [0,0,0,0,0,0,1]])
+        kf.H = np.array([[1,0,0,0,0,0,0],
+                         [0,1,0,0,0,0,0],
+                         [0,0,1,0,0,0,0],
+                         [0,0,0,1,0,0,0]])
+        Q = np.zeros_like(kf.F)
+        Q[self._N_MEAS:, self._N_MEAS:] = Q_scale
+        R = np.eye(self._N_MEAS) * R_scale
         
-    kalman_x, kalman_y = zip(*result)
-    plt.plot(kalman_x, kalman_y, 'g-')
-    plt.show()
- 
-demo_kalman_xy()
+        kf.Q = Q
+        kf.R = R
+        
+        kf.x = np.zeros((self._N_STATE, 1))
+        kf.x[:4,:] = init_box.get_z()
+        return kf
+    
+    def run(self, box=None):
+        """
+        # Args
+            box : Box instance
+        
+        # Returns
+            filtered_box : Box instance
+        """
+        self._kf.predict()
+        # predict_state = self._kf.x
+        
+        if box is not None:
+            z = box.get_z()
+            self._kf.update(z)
+            
+        filtered_box = Box.from_z(*self._kf.x[:4,0])
+        return filtered_box
+
+if __name__ == "__main__":
+    
+    bbs = [(100, 100, 200, 200), (100, 100, 200, 200), (120, 120, 230, 230)]
+    for i, bb in enumerate(bbs):
+        box = Box(*bb)
+        if i == 0:
+            tracker = BoxTracker(box)
+        filtered_box = tracker.run(box)
+        
+        print("==================================================================")
+        print(box.get_bb())
+        print(filtered_box.get_bb())
+        
+        
+        
+    
+    
