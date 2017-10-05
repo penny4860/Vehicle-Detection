@@ -68,9 +68,7 @@ class VideoDetector(object):
                 # run tracker by measured detection box
                 measurement_box = Box(*detect_boxes[i])
                 self._box_trackers[tracking_idx].update(measurement_box)
-        
-        print("stiil image box: {}, tracking box: {}".format(len(detect_boxes), len(tracking_boxes)))
-        
+
         # 5. tracking but unmatched traker process
         for i, _ in enumerate(self._box_trackers):
             idx, iou = box_matcher.match_idx_of_box2_idx(i)
@@ -78,6 +76,12 @@ class VideoDetector(object):
             # missing target
             if idx is None:
                 self._box_trackers[i].miss()
+
+        ###########################################################################################################
+        print("stiil image box: {}, tracking box: {}".format(len(detect_boxes), len(tracking_boxes)))
+        for tracker in self._box_trackers:
+            print("    {}: detect count: {}, miss count: {}".format(tracker.group_number, tracker.detect_count, tracker.miss_count))
+        ###########################################################################################################
 
         self._box_trackers += new_box_trackers
 
