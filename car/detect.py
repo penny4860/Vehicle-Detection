@@ -6,7 +6,11 @@ from car.desc import HogDesc, HogMap
 from car.train import load_model
 from car.scan import MultipleScanner
 from car.heatmap import HeatMap
-from car.car import Car, match
+
+# Todo : Box package #############################################
+from car.track import BoxTracker, Box
+from car.match import BoxMatcher
+##################################################################
 
 import numpy as np
 
