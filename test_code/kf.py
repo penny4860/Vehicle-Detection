@@ -1,18 +1,18 @@
 
 from filterpy.kalman import KalmanFilter
 import numpy as np
-
+np.set_printoptions(precision=2, suppress=True)
 
 class Box(object):
     
-    def __init__(self, x1, x2, y1, y2):
+    def __init__(self, x1, y1, x2, y2):
         self.x1 = x1
         self.y1 = y1
         self.x2 = x2
         self.y2 = y2
     
     def get_bb(self):
-        return self.x1, self.y1, self.x2, self.y2
+        return int(self.x1), int(self.y1), int(self.x2), int(self.y2)
     
     def get_px(self):
         px = (self.x1 + self.x2) / 2 
@@ -34,6 +34,7 @@ class Box(object):
         ratio = float(w)/h
         return ratio
 
+
 class BoxTracker(object):
     
     _N_MEAS = 4         # (px, py, scale, ratio)-ordered
@@ -49,6 +50,18 @@ class BoxTracker(object):
         ratio = box.get_ratio()
         z = np.array([px, py, scale, ratio]).reshape(-1,1)
         return z
+
+    def _state_to_box(self, state):
+        import math
+        px, py, scale, ratio = state[:4,0]
+        w = math.sqrt(scale * ratio)
+        h = scale / w
+        x1 = px - w/2
+        x2 = px + w/2
+        y1 = py - h/2
+        y2 = py + h/2
+        box = Box(x1, y1, x2, y2)
+        return box
 
     def _build_kf(self, init_box, Q_scale=0.01, R_scale=10.0):
         kf = KalmanFilter(dim_x=self._N_STATE,
@@ -72,64 +85,42 @@ class BoxTracker(object):
         kf.R = R
         
         init_z = self._box_to_z(init_box)
-        kf.x = np.array([init_z[0,0],
-                         init_z[1,0],
-                         init_z[2,0],
-                         init_z[3,0],
-                         0,
-                         0,
-                         0]).reshape(-1,1)
+        kf.x = np.zeros((self._N_STATE, 1))
+        kf.x[:4,:] = init_z
         return kf
     
-    def run(self, measured):
+    def run(self, box=None):
         """
         # Args
-            measured : array
-                (x, y, w*h, w/h)-ordered
+            box : Box instance
         
         # Returns
-            output : array
-                (x, y, w*h, w/h)-ordered
-        
+            filtered_box : Box instance
         """
-        z = np.array(measured).reshape(-1, 1)
-
         self._kf.predict()
         # predict_state = self._kf.x
         
-        self._kf.update(z)
-        # posterior_state = self._kf.x
-        output = self._kf.x[0:4]
-        return output
+        if box is not None:
+            z = self._box_to_z(box)
+            self._kf.update(z)
+        
+        filtered_box = self._state_to_box(self._kf.x)
+        return filtered_box
 
-#     for meas in zip(observed_x, observed_y):
-#         kf.predict()
-#         z = np.array([meas[0], meas[1]]).reshape(-1,1)
-#         kf.update(z)
-#         result.append(kf.x[0:2])
-#         print(meas, kf.x[0], kf.x[1])
-
-
-# import matplotlib.pyplot as plt
-# def demo_kalman_xy():
-#     N = 100
-#     true_x = np.linspace(0.0, 1000.0, N)
-#     true_y = true_x
-#     observed_x = true_x + 10*np.random.random(N)
-#     observed_y = true_y + 10*np.random.random(N)
-#     plt.plot(observed_x, observed_y, 'ro')
-#     result = []
-# 
-#     
-#     for meas in zip(observed_x, observed_y):
-#         kf.predict()
-#         z = np.array([meas[0], meas[1]]).reshape(-1,1)
-#         kf.update(z)
-#         result.append(kf.x[0:2])
-#         print(meas, kf.x[0], kf.x[1])
-#         
-#     kalman_x, kalman_y = zip(*result)
-#     plt.plot(kalman_x, kalman_y, 'g-')
-#     plt.show()
-#  
-# demo_kalman_xy()
+if __name__ == "__main__":
+    
+    bbs = [(100, 100, 200, 200), (100, 100, 200, 200), (120, 120, 230, 230)]
+    for i, bb in enumerate(bbs):
+        box = Box(*bb)
+        if i == 0:
+            tracker = BoxTracker(box)
+        filtered_box = tracker.run(box)
+        
+        print("==================================================================")
+        print(box.get_bb())
+        print(filtered_box.get_bb())
+        
+        
+        
+    
+    
