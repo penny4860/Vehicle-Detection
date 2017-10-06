@@ -17,7 +17,7 @@ def files_to_images(files):
     images = np.array(images)
     return images
 
-START = 650
+START = 250
 if __name__ == "__main__":
     img_files = list_files("project_video", pattern="*.jpg", random_order=False, recursive_option=False)
     imgs = files_to_images(img_files)[START:]
