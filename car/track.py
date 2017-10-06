@@ -146,6 +146,12 @@ class BoxTracker(object):
             else:
                 return False
 
+    def is_missing_but_drawing(self):
+        if self._is_reliable_target() and self.miss_count >= 20:
+            return True
+        else:
+            return False
+
     def _is_reliable_target(self):
         if self.detect_count >= RELIABLE_THD:
             return True
