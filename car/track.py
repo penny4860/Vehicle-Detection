@@ -147,7 +147,7 @@ class BoxTracker(object):
                 return False
 
     def is_missing_but_drawing(self):
-        if self._is_reliable_target() and self.miss_count >= 20:
+        if self._is_reliable_target() and self.miss_count >= UNTRACK_THD:
             return True
         else:
             return False
