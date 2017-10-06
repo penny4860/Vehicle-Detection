@@ -6,77 +6,111 @@ from car.desc import HogDesc, HogMap
 from car.train import load_model
 from car.scan import MultipleScanner
 from car.heatmap import HeatMap
-from car.car import Car, match
+
+# Todo : Box package #############################################
+from car.track import BoxTracker, Box
+from car.match import BoxMatcher
+##################################################################
 
 import numpy as np
 
- 
+
+MAX_TRACKERS = 10
 class VideoDetector(object):
     def __init__(self, img_detector):
         self._img_detector = img_detector
-        self._prev_cars = []
-        
-    def _create_cur_cars(self, heat_boxes):
-        cur_cars = []
-        for box in heat_boxes:
-            cur_cars.append(Car(box))
-        return cur_cars
+
+        # BoxTracker instances
+        self._box_trackers = []
+        self._group_idxes = np.array([False]*MAX_TRACKERS)
     
-    def _process_cur_cars(self, cars, pairs):
-        """current cars 중에서 matching 된 car 를 update"""
-        
-        matching_car_idx = pairs[:, 0]
-        matching_prev_car_idx = pairs[:, 1]
-        
-        for i, cur_car in enumerate(cars):
-            # matched
-            if i in matching_car_idx:
-                arr_index = np.where(matching_car_idx == i)[0][0]
-                prev_idx = int(matching_prev_car_idx[arr_index])
-                cur_car.detect_update(self._prev_cars[prev_idx])
-
-    def _process_prev_cars(self, cars, pairs):
-        """previous cars 중에서 unmatching 된 car 를 update"""
-
-        for i, prev_car in enumerate(self._prev_cars):
-            # unmatched
-            if i not in pairs[:, 1]:
-                prev_car.undetect_update()
-                if prev_car.get_status() == "hold":
-                    cars.append(prev_car)
-
-    def run(self, img):
+    def _detect(self, img):
         _ = self._img_detector.run(img, do_heat_map=True)
-        
-        # 1. 인식된 객체에 대한 list 생성
-        cars = self._create_cur_cars(self._img_detector.heat_boxes)
-        print("heat boxes", len(cars), end=", ")
-        
-        # 2. 이전 frame 과 matching
-        pairs = match(cars, self._prev_cars) # [ (현재, 과거), .... ]
+        return self._img_detector.heat_boxes
 
-        # 3. matching 된 현재 frame 에서의 box를 처리        
-        self._process_cur_cars(cars, pairs)
+    def _get_pred_boxes(self):
+        tracking_boxes = []
+
+        for tracker in self._box_trackers:
+            tracker.predict()
+            tracking_boxes.append(tracker.get_bb())
+            
+        tracking_boxes = np.array(tracking_boxes)
+        return tracking_boxes
+
+    def _assign_group_index(self):
+        idx =  np.where(self._group_idxes == False)[0][0]
+        self._group_idxes[idx] = True
+        return idx
         
-        # 4. unmatching 된 과거 frame 에서의 box를 처리
-        self._process_prev_cars(cars, pairs)
+    def run(self, img):
+
+        # 1. run still image detection framework
+        detect_boxes = np.array(self._detect(img))
+
+        # 2. get tracking boxes
+        tracking_boxes = self._get_pred_boxes()
+
+        print("stiil image box: {}, tracking box: {}".format(len(detect_boxes), len(tracking_boxes)))
+
+        # 3. matching 2-list of boxes
+        box_matcher = BoxMatcher(detect_boxes, tracking_boxes)
         
-        print("cur cars", len(cars), end=", ")
-        boxes = []
-        for car in cars:
-            if car.get_status() == "detect":
-                boxes.append(car.get_box())
-        print("draw boxes", len(boxes), end=", ")
-        
-        import copy
-        self._prev_cars = copy.deepcopy(cars)
-        
-        # 
+        # 4. detected boxes op
+        new_box_trackers = []
+        for i, _ in enumerate(detect_boxes):
+            tracking_idx, iou = box_matcher.match_idx_of_box1_idx(i)
+            # Todo : iou 로 thresholding
+            
+            if tracking_idx is None:
+                # create new tracker
+                box_tracker = BoxTracker(Box(*detect_boxes[i]), self._assign_group_index())
+                new_box_trackers.append(box_tracker)
+            else:
+                # run tracker by measured detection box
+                measurement_box = Box(*detect_boxes[i])
+                self._box_trackers[tracking_idx].update(measurement_box)
+
+        # 5. tracking but unmatched traker process
+        for i, _ in enumerate(self._box_trackers):
+            idx, iou = box_matcher.match_idx_of_box2_idx(i)
+
+            # missing target
+            if idx is None:
+                self._box_trackers[i].miss()
+
+        ###########################################################################################################
+        for tracker in self._box_trackers:
+            print("    {}: detect count: {}, miss count: {}".format(tracker.group_number, tracker.detect_count, tracker.miss_count))
+        ###########################################################################################################
+
+        self._box_trackers += new_box_trackers
+
+        # 6. delete tracker in trackers
+        for tracker in self._box_trackers[:]:
+            if tracker.is_delete():
+                self._group_idxes[tracker.group_number] = False
+                self._box_trackers.remove(tracker)
+
         img_clone = self._draw_boxes(img, self._img_detector.heat_boxes, (255, 0, 0), 8)
-        img_video = self._draw_boxes(img_clone, boxes, (0, 255, 0), 2, True)
-        return img_video
+        
+        
+        # 7. draw box
+        for tracker in self._box_trackers:
+            if tracker.is_draw():
+                img_clone = self._draw_group_box(img_clone, tracker.get_bb(), tracker.group_number)
+                
+        return img_clone
 
+    def _draw_group_box(self, image, box, g_number, color=(0, 255, 0), thickess=4):
+        clone = image.copy()
 
+        p1 = (box[0], box[1])
+        p2 = (box[2], box[3])
+        cv2.rectangle(clone, p1, p2, color, thickess)
+        cv2.putText(clone, "car:{}".format(g_number), p1, cv2.FONT_HERSHEY_SIMPLEX, 1, color, 4)
+        return clone
+    
     def _draw_boxes(self, image, boxes, color=(0, 255, 0), thickess=2, mark_group=False):
         """Draw detected boxes to an image"""
          

@@ -16,7 +16,7 @@ class BoxMatcher(object):
         self._boxes1 = boxes1
         self._boxes2 = boxes2
 
-        if boxes1 == [] or boxes2 == []:
+        if len(boxes1) == 0 or len(boxes2) == 0:
             pass
         else:
             self._iou_matrix = self._calc(boxes1, boxes2)
@@ -34,7 +34,7 @@ class BoxMatcher(object):
                 IOU (intersection over union) between the box corresponding to the box1 index and the box2 matching it
         """
         assert box1_idx < len(self._boxes1)
-        if self._boxes2 == []:
+        if len(self._boxes2) == 0:
             return None, 0
         
         box1_matching_idx_list = self._match_pairs[:, 0]
@@ -58,13 +58,12 @@ class BoxMatcher(object):
                 IOU (intersection over union) between the box corresponding to the box2 index and the box1 matching it
         """
         assert box2_idx < len(self._boxes2)
-        if self._boxes1 == []:
+        if len(self._boxes1) == 0:
             return None, 0
 
         box1_matching_idx_list = self._match_pairs[:, 0]
         box2_matching_idx_list = self._match_pairs[:, 1]
         box1_idx = self._find(box2_idx, box2_matching_idx_list, box1_matching_idx_list)
-        iou = self._iou_matrix[box1_idx, box2_idx]
         if box1_idx is None:
             iou = 0
         else:
