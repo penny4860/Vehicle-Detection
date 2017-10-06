@@ -30,7 +30,7 @@ if __name__ == "__main__":
         img_draw = d.run(img)
         
         count_str = "{}".format(count).zfill(5)
-        filename = "project_video//debug//{}.jpg".format(count_str)
+        filename = "project_video//debug3//{}.jpg".format(count_str)
         cv2.imwrite(filename, img_draw)
         print(filename)
         count += 1
