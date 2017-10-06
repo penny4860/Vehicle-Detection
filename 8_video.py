@@ -6,6 +6,7 @@ from car.data import list_files
 from car.utils import plot_images
 
 import cv2
+import numpy as np
 
 
 def files_to_images(files):
@@ -17,21 +18,22 @@ def files_to_images(files):
     images = np.array(images)
     return images
 
-START = 650
+START = 890
+START = 877
+
 if __name__ == "__main__":
     img_files = list_files("project_video", pattern="*.jpg", random_order=False, recursive_option=False)
-    imgs = files_to_images(img_files)[START:]
+    imgs = files_to_images(img_files)[START:START+1]
     
-    d = VideoDetector(ImgDetector(classifier=load_model("model_v4.pkl")))
-    # d = ImgDetector(classifier=load_model("model_v4.pkl"))
+    d = ImgDetector(classifier=load_model("model_v4.pkl"))
     
     count = START
     for img in imgs:
         img_draw = d.run(img)
         
-        count_str = "{}".format(count).zfill(5)
-        filename = "project_video//debug//{}.jpg".format(count_str)
-        cv2.imwrite(filename, img_draw)
-        print(filename)
-        count += 1
+        plot_images([img, img_draw, d._heat_map._heat_map])
+        x1, y1, x2, y2 = d.heat_boxes[0]
+        w = x2-x1
+        h = y2-y1
+        print(w, h, w/h)
 
