@@ -19,8 +19,7 @@ def files_to_images(files):
     return images
 
 START = 890
-# START = 877
-START = 968
+START = 877
 
 if __name__ == "__main__":
     img_files = list_files("project_video", pattern="*.jpg", random_order=False, recursive_option=False)
@@ -30,6 +29,11 @@ if __name__ == "__main__":
     
     count = START
     for img in imgs:
-        img_draw = d.run(img)        
+        img_draw = d.run(img)
+        
         plot_images([img, img_draw, d._heat_map._heat_map])
+        x1, y1, x2, y2 = d.heat_boxes[0]
+        w = x2-x1
+        h = y2-y1
+        print(w, h, w/h)
 
