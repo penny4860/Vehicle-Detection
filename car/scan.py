@@ -123,19 +123,13 @@ class MultipleScanner(object):
         return self._updated
     
     def show_process(self):
-        count = 1
         for _ in self.generate_next():
             clone = self._image.copy()
             p1, p2 = self.get_bb()
             cv2.rectangle(clone, p1, p2, (0, 255, 0), 2)
-            #cv2.imshow("Test Image Scanner", clone)
-            count_str = "{}".format(count).zfill(5)
-            filename = "imgs//{}.jpg".format(count_str)
-            if count % 4 == 0:
-                cv2.imwrite(filename, clone)
-            #cv2.waitKey(1)
-            #time.sleep(0.025)
-            count += 1
+            cv2.imshow("Test Image Scanner", clone)
+            cv2.waitKey(1)
+            time.sleep(0.025)
 
     def _set_original_box(self, p1, p2):
         """Set bounding box coordinate in the original image"""
