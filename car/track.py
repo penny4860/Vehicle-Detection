@@ -56,7 +56,7 @@ UNTRACK_THD = 5
 class BoxTracker(object):
     
     _N_MEAS = 4         # (px, py, scale, ratio)-ordered
-    _N_STATE = 8        # (px, py, scale, ratio, vx, vy, vs)-ordered
+    _N_STATE = 7        # (px, py, scale, ratio, vx, vy, vs)-ordered
     
     def __init__(self, init_box, group_number=1):
         self._kf = self._build_kf(init_box)
@@ -68,18 +68,17 @@ class BoxTracker(object):
     def _build_kf(self, init_box, Q_scale=1.0, R_scale=400.0):
         kf = KalmanFilter(dim_x=self._N_STATE,
                           dim_z=self._N_MEAS)
-        kf.F = np.array([[1,0,0,0,1,0,0,0],
-                         [0,1,0,0,0,1,0,0],
-                         [0,0,1,0,0,0,1,0],
-                         [0,0,0,1,0,0,0,1],
-                         [0,0,0,0,1,0,0,0],
-                         [0,0,0,0,0,1,0,0],
-                         [0,0,0,0,0,0,1,0],
-                         [0,0,0,0,0,0,0,1]])
-        kf.H = np.array([[1,0,0,0,0,0,0,0],
-                         [0,1,0,0,0,0,0,0],
-                         [0,0,1,0,0,0,0,0],
-                         [0,0,0,1,0,0,0,0]])
+        kf.F = np.array([[1,0,0,0,1,0,0],
+                         [0,1,0,0,0,1,0],
+                         [0,0,1,0,0,0,1],
+                         [0,0,0,1,0,0,0],
+                         [0,0,0,0,1,0,0],
+                         [0,0,0,0,0,1,0],
+                         [0,0,0,0,0,0,1]])
+        kf.H = np.array([[1,0,0,0,0,0,0],
+                         [0,1,0,0,0,0,0],
+                         [0,0,1,0,0,0,0],
+                         [0,0,0,1,0,0,0]])
         Q = np.zeros_like(kf.F)
         Q[self._N_MEAS:, self._N_MEAS:] = Q_scale
         R = np.eye(self._N_MEAS) * R_scale
@@ -117,7 +116,7 @@ class BoxTracker(object):
         self.miss_count += 1
     
     def get_bb(self):
-        box = Box.from_z(*self._kf.x[:self._N_MEAS,0])
+        box = Box.from_z(*self._kf.x[:4,0])
         bounding_box = box.get_bb()
         return bounding_box
 
