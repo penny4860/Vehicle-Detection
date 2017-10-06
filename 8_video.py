@@ -20,13 +20,7 @@ def files_to_images(files):
 
 START = 890
 # START = 877
-START = 274
-# START = 277
-START = 906 #2.47
-START = 912 #2.47
-START = 863 #1.92
-START = 881 #1.92
-
+START = 968
 
 if __name__ == "__main__":
     img_files = list_files("project_video", pattern="*.jpg", random_order=False, recursive_option=False)
