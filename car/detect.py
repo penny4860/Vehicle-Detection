@@ -25,7 +25,14 @@ class VideoDetector(object):
         self._group_idxes = np.array([False]*MAX_TRACKERS)
     
     def _detect(self, img):
-        _ = self._img_detector.run(img, do_heat_map=True)
+        def _is_obscured():
+            is_exist = False
+            for tracker in self._box_trackers:
+                if tracker.is_missing_but_drawing():
+                    is_exist = True
+            return is_exist
+        
+        _ = self._img_detector.run(img, do_heat_map=True, do_separation=_is_obscured())
         return self._img_detector.heat_boxes
 
     def _get_pred_boxes(self):
@@ -144,7 +151,7 @@ class ImgDetector(object):
         self._start_y = 0
          
      
-    def run(self, image, start_pt=(640,400), end_pt=(1280, 400+256), do_heat_map=True):
+    def run(self, image, start_pt=(640,400), end_pt=(1280, 400+256), do_heat_map=True, do_separation=False):
         """
         # Args
             image : ndarray, shape of (H, W, 3)
@@ -173,7 +180,7 @@ class ImgDetector(object):
  
         # 4. Run heat map operation        
         if do_heat_map:
-            self.heat_boxes = self._heat_map.get_boxes(self.detect_boxes, image.shape[1], image.shape[0])
+            self.heat_boxes = self._heat_map.get_boxes(self.detect_boxes, image.shape[1], image.shape[0], do_separation)
         else:
             self.heat_boxes = self.detect_boxes
          
