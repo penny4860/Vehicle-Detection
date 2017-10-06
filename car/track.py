@@ -121,7 +121,7 @@ class BoxTracker(object):
         return bounding_box
 
     def is_draw(self):
-        if self.detect_count-self.miss_count >= DRAW_THD:
+        if self._is_reliable_target() or self.detect_count-self.miss_count >= DRAW_THD:
             return True
         else:
             return False
