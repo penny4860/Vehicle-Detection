@@ -56,7 +56,7 @@ class HeatMap(object):
             h = y2-y1
             
             if w / h >= 1.85:
-                print("separation x")
+                print("separation x", w / h)
                 box1, box2 = _separate_box(box, axis="x")
                 boxes.remove(box)
                 boxes.append(box1)
