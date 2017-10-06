@@ -51,6 +51,8 @@ class VideoDetector(object):
         # 2. get tracking boxes
         tracking_boxes = self._get_pred_boxes()
 
+        print("stiil image box: {}, tracking box: {}".format(len(detect_boxes), len(tracking_boxes)))
+
         # 3. matching 2-list of boxes
         box_matcher = BoxMatcher(detect_boxes, tracking_boxes)
         
@@ -78,7 +80,6 @@ class VideoDetector(object):
                 self._box_trackers[i].miss()
 
         ###########################################################################################################
-        print("stiil image box: {}, tracking box: {}".format(len(detect_boxes), len(tracking_boxes)))
         for tracker in self._box_trackers:
             print("    {}: detect count: {}, miss count: {}".format(tracker.group_number, tracker.detect_count, tracker.miss_count))
         ###########################################################################################################
