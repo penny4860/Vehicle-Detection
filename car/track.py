@@ -50,7 +50,7 @@ class Box(object):
         ratio = float(w)/h
         return ratio
 
-
+RELIABLE_THD = 20
 DRAW_THD = 5
 UNTRACK_THD = 5
 class BoxTracker(object):
@@ -105,7 +105,7 @@ class BoxTracker(object):
             filtered_box : Box instance
         """
         if box is not None:
-            self.detect_count += 1
+            self._detect_counting()
             z = box.get_z()
             self._kf.update(z)
             
@@ -121,12 +121,42 @@ class BoxTracker(object):
         return bounding_box
 
     def is_draw(self):
-        if self.detect_count-self.miss_count >= DRAW_THD:
+        if self._is_reliable_target() or self.detect_count-self.miss_count >= DRAW_THD:
             return True
+        else:
+            return False
 
     def is_delete(self):
-        if self.miss_count > self.detect_count or self.miss_count >= UNTRACK_THD:
+        def _out_range():
+            px, py = self._kf.x[:2,0]
+            # hard coding
+            if px > 0 and px < 1280 and py > 350 and py < 960:
+                return False
+            else:
+                return True
+        
+        if self._is_reliable_target():
+            if _out_range():
+                return True
+            else:
+                return False
+        else:
+            if self.miss_count > self.detect_count or self.miss_count >= UNTRACK_THD:
+                return True
+            else:
+                return False
+
+    def _is_reliable_target(self):
+        if self.detect_count >= RELIABLE_THD:
             return True
+        else:
+            return False
+
+    def _detect_counting(self):
+        self.detect_count += 1
+        if self._is_reliable_target():
+            self.miss_count = 0
+
 
 if __name__ == "__main__":
     

@@ -17,7 +17,7 @@ def files_to_images(files):
     images = np.array(images)
     return images
 
-START = 676
+START = 650
 if __name__ == "__main__":
     img_files = list_files("project_video", pattern="*.jpg", random_order=False, recursive_option=False)
     imgs = files_to_images(img_files)[START:]
@@ -30,7 +30,7 @@ if __name__ == "__main__":
         img_draw = d.run(img)
         
         count_str = "{}".format(count).zfill(5)
-        filename = "project_video//video_track//{}.jpg".format(count_str)
+        filename = "project_video//debug//{}.jpg".format(count_str)
         cv2.imwrite(filename, img_draw)
         print(filename)
         count += 1
