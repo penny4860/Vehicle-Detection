@@ -32,7 +32,38 @@ class HeatMap(object):
             
         self._heat_bin = self._get_bin()
         heat_boxes = self._extract_boxes()
+        
+        for box in heat_boxes[:]:
+            x1, y1, x2, y2 = box
+            
+            w = x2-x1
+            h = y2-y1
+            
+            if w / h >= 1.85:
+                print("separation x")
+                box1, box2 = self._separate_box(box, axis="x")
+            elif h / w >= 1.85:
+                print("separation y")
+                box1, box2 = self._separate_box(box, axis="y")
+                
+            heat_boxes.remove(box)
+            heat_boxes.append(box1)
+            heat_boxes.append(box2)
+                
         return heat_boxes
+
+    def _separate_box(self, box, axis="x"):
+        x1, y1, x2, y2 = box
+        
+        if axis == "x":
+            px = (x1 + x2) / 2
+            box1 = np.array([x1, y1, px, y2]).astype(int)
+            box2 = np.array([px, y1, x2, y2]).astype(int)
+        elif axis == "y":
+            py = (y1 + y2) / 2
+            box1 = np.array([x1, y1, x2, py]).astype(int)
+            box2 = np.array([x1, py, x2, y2]).astype(int)
+        return box1, box2
 
     def show_process(self, image, boxes):
         """
