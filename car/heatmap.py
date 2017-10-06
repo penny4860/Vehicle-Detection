@@ -12,7 +12,7 @@ class HeatMap(object):
         self._heat_map = None
         self._heat_bin = None
         
-    def get_boxes(self, boxes, w, h):
+    def get_boxes(self, boxes, w, h, do_separation=False):
         """
         # Args
             boxes : list of tuple (x1, y1, x2, y2)
@@ -32,8 +32,8 @@ class HeatMap(object):
             
         self._heat_bin = self._get_bin()
         heat_boxes = self._extract_boxes()
-        heat_boxes = self._separate(heat_boxes)
-                
+        if do_separation:
+            heat_boxes = self._separate(heat_boxes)
         return heat_boxes
 
     def _separate(self, boxes):
