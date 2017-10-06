@@ -65,7 +65,7 @@ class BoxTracker(object):
         self.detect_count = 1
         self.miss_count = 0
 
-    def _build_kf(self, init_box, Q_scale=0.01, R_scale=10.0):
+    def _build_kf(self, init_box, Q_scale=0.01, R_scale=400.0):
         kf = KalmanFilter(dim_x=self._N_STATE,
                           dim_z=self._N_MEAS)
         kf.F = np.array([[1,0,0,0,1,0,0],
