@@ -137,7 +137,7 @@ class BoxTracker(object):
             else:
                 return False
         
-        if self._is_reliable_target():
+        if self.is_missing_but_drawing():
             if _in_reliable_range():
                 return False
             else:
