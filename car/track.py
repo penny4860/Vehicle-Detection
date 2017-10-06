@@ -127,16 +127,16 @@ class BoxTracker(object):
             return False
 
     def is_delete(self):
-        def _in_detecting_range():
+        def _out_range():
             px, py = self._kf.x[:2,0]
             # hard coding
             if px > 0 and px < 1280 and py > 350 and py < 960:
-                return True
-            else:
                 return False
+            else:
+                return True
         
         if self._is_reliable_target():
-            if _in_detecting_range():
+            if _out_range():
                 return True
             else:
                 return False
