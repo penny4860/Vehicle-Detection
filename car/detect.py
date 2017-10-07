@@ -55,15 +55,13 @@ class VideoDetector(object):
         self._group_idxes[idx] = True
         return idx
         
-    def run(self, img):
+    def run(self, img, draw_unfiltered_box=True):
 
         # 1. run still image detection framework
         detect_boxes = np.array(self._detect(img))
 
         # 2. get tracking boxes
         tracking_boxes = self._get_pred_boxes()
-
-        print("stiil image box: {}, tracking box: {}".format(len(detect_boxes), len(tracking_boxes)))
 
         # 3. matching 2-list of boxes
         box_matcher = BoxMatcher(detect_boxes, tracking_boxes)
@@ -91,11 +89,6 @@ class VideoDetector(object):
             if idx is None:
                 self._box_trackers[i].miss()
 
-        ###########################################################################################################
-        for tracker in self._box_trackers:
-            print("    {}: detect count: {}, miss count: {}".format(tracker.group_number, tracker.detect_count, tracker.miss_count))
-        ###########################################################################################################
-
         self._box_trackers += new_box_trackers
 
         # 6. delete tracker in trackers
@@ -104,7 +97,10 @@ class VideoDetector(object):
                 self._group_idxes[tracker.group_number] = False
                 self._box_trackers.remove(tracker)
 
-        img_clone = self._draw_boxes(img, detect_boxes, (255, 0, 0), 8)
+        if draw_unfiltered_box:
+            img_clone = self._draw_boxes(img, detect_boxes, (255, 0, 0), 8)
+        else:
+            img_clone = img.copy()
         
         # 7. draw box
         for tracker in self._box_trackers:
@@ -122,16 +118,14 @@ class VideoDetector(object):
         cv2.putText(clone, "car:{}".format(g_number), p1, cv2.FONT_HERSHEY_SIMPLEX, 1, color, 4)
         return clone
     
-    def _draw_boxes(self, image, boxes, color=(0, 255, 0), thickess=2, mark_group=False):
+    def _draw_boxes(self, image, boxes, color=(0, 255, 0), thickess=2):
         """Draw detected boxes to an image"""
          
         clone = image.copy()
-        for i, box in enumerate(boxes):
+        for _, box in enumerate(boxes):
             p1 = (box[0], box[1])
             p2 = (box[2], box[3])
             cv2.rectangle(clone, p1, p2, color, thickess)
-            if mark_group:
-                cv2.putText(clone, "car:{}".format(i+1), p1, cv2.FONT_HERSHEY_SIMPLEX, 1, color, 4)
         return clone
 
  
