@@ -80,7 +80,9 @@ class BoxTracker(object):
                          [0,0,1,0,0,0,0],
                          [0,0,0,1,0,0,0]])
         Q = np.zeros_like(kf.F)
-        Q[self._N_MEAS:, self._N_MEAS:] = Q_scale
+        for i in range(self._N_MEAS, self._N_STATE):
+            Q[i, i] = Q_scale
+
         R = np.eye(self._N_MEAS) * R_scale
         
         kf.Q = Q
