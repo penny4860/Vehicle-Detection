@@ -93,6 +93,11 @@ class BoxTracker(object):
         return kf
     
     def predict(self):
+        
+        if self.is_missing_but_drawing():
+            # v_scale
+            self._kf.x[6,0] = 0 
+        
         self._kf.predict()
         predict_box = Box.from_z(*self._kf.x[:self._N_MEAS,0])
         return predict_box
