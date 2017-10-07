@@ -23,8 +23,8 @@ class VideoDetector(object):
         # BoxTracker instances
         self._box_trackers = []
         self._group_idxes = np.array([False]*MAX_TRACKERS)
-        
-    def _detect_by_input_boxes(self, boxes):
+    
+    def _detect(self, img):
         def _is_obscured():
             is_exist = False
             for tracker in self._box_trackers:
@@ -32,10 +32,14 @@ class VideoDetector(object):
                     is_exist = True
             return is_exist
         
+        _ = self._img_detector.run(img, do_heat_map=True)
+
+        detected_boxes = self._img_detector.heat_boxes
         if _is_obscured():
-            boxes = separate(boxes)
-        return boxes
-    
+            detected_boxes = separate(detected_boxes)
+        
+        return detected_boxes
+
     def _get_pred_boxes(self):
         tracking_boxes = []
 
@@ -51,10 +55,10 @@ class VideoDetector(object):
         self._group_idxes[idx] = True
         return idx
         
-    def run(self, img, detect_boxes):
+    def run(self, img):
 
-#         # 1. run still image detection framework
-        detect_boxes = np.array(self._detect_by_input_boxes(detect_boxes))
+        # 1. run still image detection framework
+        detect_boxes = np.array(self._detect(img))
 
         # 2. get tracking boxes
         tracking_boxes = self._get_pred_boxes()
