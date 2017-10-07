@@ -154,7 +154,7 @@ class ImgDetector(object):
         self._start_y = 0
          
      
-    def run(self, image, start_pt=(640,400), end_pt=(1280, 400+256), do_heat_map=True, do_separation=False):
+    def run(self, image, start_pt=(640,400), end_pt=(1280, 400+256), do_heat_map=True):
         """
         # Args
             image : ndarray, shape of (H, W, 3)
@@ -183,7 +183,7 @@ class ImgDetector(object):
  
         # 4. Run heat map operation        
         if do_heat_map:
-            self.heat_boxes = self._heat_map.get_boxes(self.detect_boxes, image.shape[1], image.shape[0], do_separation)
+            self.heat_boxes = self._heat_map.get_boxes(self.detect_boxes, image.shape[1], image.shape[0])
         else:
             self.heat_boxes = self.detect_boxes
          
