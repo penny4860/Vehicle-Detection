@@ -6,13 +6,52 @@ import matplotlib.pyplot as plt
 
 from scipy.ndimage.measurements import label
 
+
+def separate(boxes_):
+    """separate heat boxes by aspect ratio"""
+    def _separate_box(box, axis="x"):
+        x1, y1, x2, y2 = box
+        
+        if axis == "x":
+            px = (x1 + x2) / 2
+            box1 = np.array([x1, y1, px, y2]).astype(int)
+            box2 = np.array([px, y1, x2, y2]).astype(int)
+        elif axis == "y":
+            py = (y1 + y2) / 2
+            box1 = np.array([x1, y1, x2, py]).astype(int)
+            box2 = np.array([x1, py, x2, y2]).astype(int)
+        return box1, box2
+    
+    boxes = np.array(boxes_).tolist()
+    for box in boxes[:]:
+        x1, y1, x2, y2 = box
+        w = x2-x1
+        h = y2-y1
+        
+        if w / h >= 1.85:
+            print("separation x", w / h)
+            box1, box2 = _separate_box(box, axis="x")
+            boxes.remove(box)
+            boxes.append(box1)
+            boxes.append(box2)
+
+        elif h / w >= 1.85:
+            print("separation y")
+            box1, box2 = _separate_box(box, axis="y")
+            boxes.remove(box)
+            boxes.append(box1)
+            boxes.append(box2)
+            
+    return boxes
+
+
 class HeatMap(object):
     def __init__(self, threshold=2):
         self._threshold = threshold
         self._heat_map = None
         self._heat_bin = None
         
-    def get_boxes(self, boxes, w, h, do_separation=False):
+    def get_boxes(self, boxes, w, h):
         """
         # Args
             boxes : list of tuple (x1, y1, x2, y2)
@@ -32,44 +71,7 @@ class HeatMap(object):
             
         self._heat_bin = self._get_bin()
         heat_boxes = self._extract_boxes()
-        if do_separation:
-            heat_boxes = self._separate(heat_boxes)
         return heat_boxes
-
-    def _separate(self, boxes):
-        def _separate_box(box, axis="x"):
-            x1, y1, x2, y2 = box
-            
-            if axis == "x":
-                px = (x1 + x2) / 2
-                box1 = np.array([x1, y1, px, y2]).astype(int)
-                box2 = np.array([px, y1, x2, y2]).astype(int)
-            elif axis == "y":
-                py = (y1 + y2) / 2
-                box1 = np.array([x1, y1, x2, py]).astype(int)
-                box2 = np.array([x1, py, x2, y2]).astype(int)
-            return box1, box2
-        
-        for box in boxes[:]:
-            x1, y1, x2, y2 = box
-            w = x2-x1
-            h = y2-y1
-            
-            if w / h >= 1.85:
-                print("separation x", w / h)
-                box1, box2 = _separate_box(box, axis="x")
-                boxes.remove(box)
-                boxes.append(box1)
-                boxes.append(box2)
-
-            elif h / w >= 1.85:
-                print("separation y")
-                box1, box2 = _separate_box(box, axis="y")
-                boxes.remove(box)
-                boxes.append(box1)
-                boxes.append(box2)
-                
-        return boxes
 
     def show_process(self, image, boxes):
         """

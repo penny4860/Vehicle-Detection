@@ -5,7 +5,7 @@ import cv2
 from car.desc import HogDesc, HogMap
 from car.train import load_model
 from car.scan import MultipleScanner
-from car.heatmap import HeatMap
+from car.heatmap import HeatMap, separate
 
 # Todo : Box package #############################################
 from car.track import BoxTracker, Box
@@ -32,8 +32,12 @@ class VideoDetector(object):
                     is_exist = True
             return is_exist
         
-        _ = self._img_detector.run(img, do_heat_map=True, do_separation=_is_obscured())
-        return self._img_detector.heat_boxes
+        _ = self._img_detector.run(img, do_heat_map=True)
+        
+        if _is_obscured():
+            heat_boxes = separate(self._img_detector.heat_boxes)
+        
+        return heat_boxes
 
     def _get_pred_boxes(self):
         tracking_boxes = []
@@ -99,7 +103,7 @@ class VideoDetector(object):
                 self._group_idxes[tracker.group_number] = False
                 self._box_trackers.remove(tracker)
 
-        img_clone = self._draw_boxes(img, self._img_detector.heat_boxes, (255, 0, 0), 8)
+        img_clone = self._draw_boxes(img, detect_boxes, (255, 0, 0), 8)
         
         # 7. draw box
         for tracker in self._box_trackers:

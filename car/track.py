@@ -137,7 +137,7 @@ class BoxTracker(object):
         def _in_reliable_range():
             x1, y1, x2, y2 = self.get_bb()
             
-            margin = 100
+            margin = 50
             # hard coding
             if x1 > margin and x2 < 1280-margin and y1 > 350 and y2 < 960-margin:
                 return True
