@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from scipy.ndimage.measurements import label
 
 
-def separate(boxes):
+def separate(boxes_):
     """separate heat boxes by aspect ratio"""
     def _separate_box(box, axis="x"):
         x1, y1, x2, y2 = box
@@ -22,6 +22,7 @@ def separate(boxes):
             box2 = np.array([x1, py, x2, y2]).astype(int)
         return box1, box2
     
+    boxes = np.array(boxes_).tolist()
     for box in boxes[:]:
         x1, y1, x2, y2 = box
         w = x2-x1
