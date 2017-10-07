@@ -65,7 +65,7 @@ class BoxTracker(object):
         self.detect_count = 1
         self.miss_count = 0
 
-    def _build_kf(self, init_box, Q_scale=0.01, R_scale=400.0):
+    def _build_kf(self, init_box, Q_scale=1.0, R_scale=400.0):
         kf = KalmanFilter(dim_x=self._N_STATE,
                           dim_z=self._N_MEAS)
         kf.F = np.array([[1,0,0,0,1,0,0],
@@ -80,19 +80,21 @@ class BoxTracker(object):
                          [0,0,1,0,0,0,0],
                          [0,0,0,1,0,0,0]])
         Q = np.zeros_like(kf.F)
-        Q[self._N_MEAS:, self._N_MEAS:] = Q_scale
+        for i in range(self._N_MEAS, self._N_STATE):
+            Q[i, i] = Q_scale
+
         R = np.eye(self._N_MEAS) * R_scale
         
         kf.Q = Q
         kf.R = R
         
         kf.x = np.zeros((self._N_STATE, 1))
-        kf.x[:4,:] = init_box.get_z()
+        kf.x[:self._N_MEAS,:] = init_box.get_z()
         return kf
     
     def predict(self):
         self._kf.predict()
-        predict_box = Box.from_z(*self._kf.x[:4,0])
+        predict_box = Box.from_z(*self._kf.x[:self._N_MEAS,0])
         return predict_box
     
     def update(self, box=None):
@@ -109,7 +111,7 @@ class BoxTracker(object):
             z = box.get_z()
             self._kf.update(z)
             
-        filtered_box = Box.from_z(*self._kf.x[:4,0])
+        filtered_box = Box.from_z(*self._kf.x[:self._N_MEAS,0])
         return filtered_box
     
     def miss(self):
