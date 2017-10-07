@@ -8,27 +8,18 @@ from car.utils import plot_images
 import cv2
 
 
-def files_to_images(files):
-    import numpy as np
-    images = []
-    for filename in files:
-        image = cv2.imread(filename)
-        images.append(image)
-    images = np.array(images)
-    return images
-
 START = 250
 if __name__ == "__main__":
-    img_files = list_files("project_video", pattern="*.jpg", random_order=False, recursive_option=False)
-    imgs = files_to_images(img_files)[START:256]
-    
+    img_files = list_files("project_video", pattern="*.jpg", random_order=False, recursive_option=False)    
     d = VideoDetector(ImgDetector(classifier=load_model("model_v4.pkl")))
     # d = ImgDetector(classifier=load_model("model_v4.pkl"))
     
     import numpy as np
 
     count = START
-    for img in imgs:
+    for fname in img_files[START:]:
+        img = cv2.imread(fname)
+
         count_str = "{}".format(count).zfill(5)
          
         filename = "..//debug//{}.txt".format(count_str)
