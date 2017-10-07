@@ -17,7 +17,7 @@ if __name__ == "__main__":
     import numpy as np
 
     count = START
-    for fname in img_files[START:]:
+    for fname in img_files[START:620]:
         img = cv2.imread(fname)
 
         count_str = "{}".format(count).zfill(5)
