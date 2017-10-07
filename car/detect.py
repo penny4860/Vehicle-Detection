@@ -34,11 +34,10 @@ class VideoDetector(object):
         
         _ = self._img_detector.run(img, do_heat_map=True)
         
-        # Todo : 객체 내부를 변경하지 말자.
         if _is_obscured():
-            self._img_detector.heat_boxes = separate(self._img_detector.heat_boxes)
+            heat_boxes = separate(self._img_detector.heat_boxes)
         
-        return self._img_detector.heat_boxes
+        return heat_boxes
 
     def _get_pred_boxes(self):
         tracking_boxes = []
@@ -104,7 +103,7 @@ class VideoDetector(object):
                 self._group_idxes[tracker.group_number] = False
                 self._box_trackers.remove(tracker)
 
-        img_clone = self._draw_boxes(img, self._img_detector.heat_boxes, (255, 0, 0), 8)
+        img_clone = self._draw_boxes(img, detect_boxes, (255, 0, 0), 8)
         
         # 7. draw box
         for tracker in self._box_trackers:
