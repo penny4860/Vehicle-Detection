@@ -82,7 +82,7 @@ class HeatMap(object):
                 (x1, y1, x2, y2) ordered
         """
         def _plot_images(images, titles):
-            _, axes = plt.subplots(1, 4, figsize=(10,10))
+            _, axes = plt.subplots(1, len(images), figsize=(10,10))
             for img, ax, text in zip(images, axes, titles):
                 ax.imshow(img, cmap="gray")
                 ax.set_title(text, fontsize=30)
@@ -99,7 +99,7 @@ class HeatMap(object):
         heat_box_img = _draw_box(image, heat_boxes)
 
         _plot_images([self._heat_map, self._heat_bin, original_box_img, heat_box_img],
-                     ["heat map", "binary heat map", " boxes", "heat map processed boxes"])
+                     ["heat map", "thresholded heat map", "input boxes", "heat map processed boxes"])
 
     def _get_bin(self):
         heat_map_bin = np.zeros_like(self._heat_map)
