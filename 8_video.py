@@ -20,18 +20,27 @@ def files_to_images(files):
 START = 250
 if __name__ == "__main__":
     img_files = list_files("project_video", pattern="*.jpg", random_order=False, recursive_option=False)
-    imgs = files_to_images(img_files)[START:]
+    imgs = files_to_images(img_files)[START:256]
     
     d = VideoDetector(ImgDetector(classifier=load_model("model_v4.pkl")))
     # d = ImgDetector(classifier=load_model("model_v4.pkl"))
     
+    import numpy as np
+
     count = START
     for img in imgs:
-        img_draw = d.run(img)
-        
         count_str = "{}".format(count).zfill(5)
-        filename = "project_video//debug//{}.jpg".format(count_str)
+         
+        filename = "..//debug//{}.txt".format(count_str)
+        detect_boxes = np.loadtxt(filename).astype(int).reshape(-1,4)        
+        img_draw = d.run(img, detect_boxes)
+         
+        filename = "..//debug//imgs//{}.jpg".format(count_str)
         cv2.imwrite(filename, img_draw)
         print(filename)
         count += 1
+
+
+
+
 
