@@ -34,63 +34,63 @@ You're reading it!
 
 ####1. Explain how (and identify where in your code) you extracted HOG features from the training images.
 
-`car.desc.py module`에 feature extraction에 관련된 code를 구현하였습니다. 
+I implemented the code related to feature extraction in `car.desc.py module`.
 
-* Training 과정에서는 HogDesc instance를 사용해서 sample images 에 대한 feature map을 추출하였습니다.
-* Sliding window 에 의한 인식과정에서는 연산시간을 최적화 하기 위해서 image 전체에 대한 HOG map은 1번만 구하는 방식으로 feature map을 추출하였습니다. 여기서는 HogMap instance를 사용하였습니다.
-
+* In training process, I extracted feature maps for sample images using HogDesc class.
+* In the recognition process by the sliding window, the feature map is extracted in a way that only the HOG map for the entire image is obtained once in order to optimize the calculation time. I used the HogMap class here.
 
 ####2. Explain how you settled on your final choice of HOG parameters.
 
-HOG 의 tuning parameter는 다음의 3가지 입니다.
+There are three tuning parameters of HOG.
 
 * orientations
 * pixels_per_cell
 * cells_per_block
 
-patch size의 가로와 세로의 길이가 같은 상황에서, 이 3가지 parameter 에 의해서 다음의 수식으로 feature vector의 dimension이 결정됩니다.
+In a situation where the patch size has the same length and width, these three parameters determine the dimension of the feature vector with the following formula.
 
 ```
 n_cells = patch_size / pixels_per_cell
 n_features = (n_cells - cell_per_block + 1)**2 * cell_per_block**2 * orientations
 ```
 
-위 식에 의하면, feature dimention에 가장 큰 영향을 주는 parameter는 `pix_per_cell`과 `cell_per_block` 입니다.
+According to the above equation, the parameters that have the greatest effect on feature dimention are `pix_per_cell` and` cell_per_block`.
 
-feature vector의 dimension을 줄이기 위해 이 2개의 parameter는 분별력을 유지하는 한도내에서 가능한 최소의 값을 사용하였습니다. 나머지 parameter인 ```orientations``` 는 default 값을 사용하였습니다.
+To reduce the dimensionality of the feature vector, these two parameters used the smallest possible value to keep the discriminatory power. The rest of the parameter, `orientations`, uses the default value.
 
-최종적으로 사용한 HOG parameter는 다음과 같습니다.
+The final HOG parameters used are as follows.
 
 * orientations : 9
 * pixels_per_cell : 8
 * cells_per_block : 2
 
-본 project에서는 64x64 size의 image patch를 사용하였기 때문에, feature vector의 dimension size는 1764가 되었습니다.
+
+Since the project uses a 64x64 image patch, the dimension size of the feature vector is 1764.
 
 
 ####3. Describe how (and identify where in your code) you trained a classifier using your selected HOG features (and color features if you used them).
 
 ##### 1) Kernel
 
-rbf kernel SVM 과 linear SVM 중에서 rbf kernel SVM을 선택하였습니다. 실험결과 rbf kernel SVM의 분류성능이 더 좋았기 때문입니다.
+I selected rbf kernel SVM from rbf kernel SVM and linear SVM. Experimental results show that the classification performance of rbf kernel SVM is better.
 
 ##### 2) Gamma
 
-scikit-learn에서 제공하는 grid search 함수를 사용해서 `1.0` 을 선택하였습니다.
+I chose `1.0` using the grid search function provided by scikit-learn.
 
 ##### 3) C
 
-SVM 의 `C` 는 margin의 크기를 결정하기 때문에 unseen data의 분류성능에 가장 큰 영향을 줍니다.
+The `C` of the SVM determines the size of the margin, which has the greatest effect on the classification performance of unseen data.
 
-dataset을 train set과 test set으로 나누고 C값을 바꿔가면서 분류성능을 monitoring 했습니다.
+I divided the dataset into train set and test set and changed the C value to monitor the classification performance.
 
-overfitting에 대한 위험성을 줄이기 위해 `C` 값을 작게 tuning하였고, 최종적으로 `C` 값을 0.15로 정하였습니다. (`C`값을 작게 tuning 하는 것이 margin을 크게 하는 효과가 있어, test error를 작게 하는 효과가 있습니다.)
+To reduce the risk of overfitting, I tuned `C` to a smaller value and finally set the value of` C` to 0.15. (A small tuning of `C` has the effect of increasing the margin and reducing the test error.)
 
 ##### 4) Performance
 
-보유한 sample에 대한 실험결과는 아래와 같습니다.
+The experimental results for the samples we have are shown below.
 
-먼저, trainig sample 에 대한 성능입니다.
+First, performance for trainig sample.
 
 |Trainig Sample          | Precision     |  Recall       | F1-score      | Support       |  
 |:----------------------:|:-------------:|:-------------:|:-------------:|:-------------:| 
@@ -99,7 +99,7 @@ overfitting에 대한 위험성을 줄이기 위해 `C` 값을 작게 tuning하�
 | avg / total            | 1.00          | 1.00          | 1.00          | 23437         |
 
 
-다음으로, test sample 에 대한 성능입니다.
+Next, performance for the test sample.
 
 |Test Sample             | Precision     |  Recall       | F1-score      | Support       |  
 |:----------------------:|:-------------:|:-------------:|:-------------:|:-------------:| 
@@ -112,23 +112,23 @@ overfitting에 대한 위험성을 줄이기 위해 `C` 값을 작게 tuning하�
 
 ####1. Describe how (and identify where in your code) you implemented a sliding window search.  How did you decide what scales to search and how much to overlap windows?
 
-sliding window 와 관련된 logic은 `car.scan.py` module에 구현해 두었습니다. 다음의 3가지 class로 나누어서 구현하였습니다.
+The logic associated with the sliding window is implemented in the `car.scan.py` module. It is divided into the following three classes and implemented.
 
-* ImgScanner : 단일 scale에 대해서 sliding search를 담당하는 class 입니다.
-* ImgPyramid : image에 대해서 multiple scale pyramid를 구성하는 class 입니다.
-* MultipleScanner : 위 2가지 class instance를 member 변수로 갖는 wrapper class 입니다. module의 외부에서는 이 class 의 instance를 생성해서 multiple scale에 대한 sliding window search를 수행합니다.
+* ImgScanner: This class is responsible for sliding search on a single scale.
+* ImgPyramid: This is a class that makes multiple scale pyramid for image.
+* MultipleScanner: A wrapper class that has the above two class instances as member variables. From outside the module, create an instance of this class and perform a sliding window search on multiple scales.
 
-sliding window 와 관련된 parameter는 아래의 2가지가 있습니다.
+There are two parameters related to the sliding window.
 
-* search step : window가 한번에 전진하는 step을 의미 합니다. test time에서는 HOG feature를 patch 별로 구하는 것이 아니라 image 전체에 대해서 구하게 됩니다. 따라서 1개 cell의 크기인 8의 배수중에서 16으로 정하였습니다.
-* scale : image pyramid 를 구성할 때 layer가 줄어드는 비율을 의미합니다. 작은 값을 사용할 수록 scan 시간이 단축되는 효과가 있지만, detection 성능이 안좋아 질 수 있습니다. 0.6 ~ 0.8 사이의 값을 실험해 보았고, 0.8로 정하였습니다.
+* search step: A step in which the window moves forward at a time. At test time, the HOG feature is obtained for the entire image rather than for each patch. Therefore, the size of one cell is set to 16 out of 8.
+* scale: means the rate at which the layer shrinks when constructing an image pyramid. The smaller the value, the shorter the scan time, but the better the detection performance. We experimented with values ​​between 0.6 and 0.8 and set it to 0.8.
 
 <img src="output_images/scan.gif">
 
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-입력 image에서 HOG feature vector 추출하여 sliding window 로 vehicle 영역을 scan하였습니다. scan이 끝난 후에는 heat map operation을 통해서 false positive patch 를 제거 하였고, 겹치는 positive patch 를 merge 하였습니다.
+I extract the HOG feature vector from the input image and scan the vehicle area with a sliding window. After the scan, I removed the false positive patch through the heat map operation and merge the overlapping positive patches.
 
 ![alt text][image_framework]
 ---
@@ -143,7 +143,7 @@ Here's a [youtube link](https://www.youtube.com/watch?v=DgNtyNuCMbQ&feature=yout
 
 ####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-아래의 그림과 같이 heat map 을 구성하여 false positive patch 를 제거하고, overlap 영역에 대해서 merge 를 수행하였습니다.
+As shown in the figure below, I constructed a heat map to remove false positive patches and perform a merge on the overlap area.
 
 ![alt text][heat_framework]
 
@@ -156,19 +156,19 @@ Here's a [youtube link](https://www.youtube.com/watch?v=DgNtyNuCMbQ&feature=yout
 
 ##### 1) Limiatations of HOG + SVM classifier
 
-저는 이 프로젝트에서 HOG feature extractor 와 SVM 을 이용한 classifier 를 구현하였습니다. 이러한 방식은 적은 수의 training sample 로도 괜찮은 수준의 classifier 를 구현할 수 있다는 점에서 장점이 있습니다. 
-그러나, 이러한 방법은 CNN (Convolutional Neural Network) 를 사용한 방법보다 성능이 떨어 집니다. 만약에 training sample 을 더 수집할 수 있다면, CNN의 사용을 생각해 볼 수 있을 것입니다.
+I implemented the HOG feature extractor and classifier using SVM in this project. This approach has the advantage of being able to implement decent classifiers with a small number of training samples.
+However, this method has less performance than the CNN (Convolutional Neural Network) method. If you can collect more training samples, you might consider using CNN.
 
 ##### 2) Limitations of Sliding window fashion
 
-Sliding window 방식은 이미지의 여러 patch에 classifier를 적용해서 각 patch를 desired object 또는 배경으로 분류합니다. 이러한 방식은 object detection 알고리즘을 구현할 때 가장 먼저 생각할 수 있는 방법이고, 성능도 나쁘지 않습니다. 그러나, slidinw window 방식은 2개 이상의 object가 근접해 있을 경우 이를 분리하는 것이 어렵습니다. 
+Sliding window method classifies each patch into desired object or background by applying classifier to various patches of image. This is the first thing you can think of when implementing an object detection algorithm, and its performance is not bad. However, the slidinw window method is difficult to separate if two or more objects are close together.
 
 ![alt text][separation]
 
-위 그림에서와 같이 still image 정보만으로는 근접해 있는 2개의 object를 분리해서 인식하는 것이 어려웠습니다. 저는 본 프로젝트에서 이 문제를 해결하기 위해 이전 frames 에서의 인식된 정보를 사용하였습니다. 
-[Simple Online and Realtime Tracking](https://arxiv.org/abs/1602.00763)을 참고해서 kalman filter를 이용한 tracking 알고리즘을 구현했습니다. 그 결과 위 그림에서의 초록색 box와 같은 검출 결과가 도출되었습니다.
+As shown in the figure above, it was difficult to separate two objects in close proximity by still image information. I used the perceived information from previous frames to solve this problem in this project. I implemented the tracking algorithm using the kalman filter by referring to [Simple Online and Realtime Tracking](https://arxiv.org/abs/1602.00763). As a result, the green box in the figure above was detected.
 
-그러나, time-series information을 사용해서 still image에서의 detection 성능을 극복하는 것에는 한계가 있습니다. 
-still image에서 인식 성능을 높이기 위해서는 [YOLO 9000](https://arxiv.org/abs/1612.08242) 이나 [SSD](https://arxiv.org/abs/1512.02325)와 같은 방법을 사용할 수 있습니다. 
-이 논문들에서는 image 를 여러개의 작은 grid로 나누고, 각 grid 마다 여러개의 object를 검출하는 방식을 사용했습니다. 매우 효과적인 방법이라고 생각합니다.
+However, there is a limit to overcoming detection performance in still images using time-series information.
+To improve recognition performance in still images, you can use methods such as [YOLO 9000](https://arxiv.org/abs/1612.08242) or [SSD](https://arxiv.org/abs/1512.02325).
+The authors of this paper used a method of dividing the image into multiple small grids and detecting multiple objects for each grid. I think this is a very effective and interesting way.
+
 
