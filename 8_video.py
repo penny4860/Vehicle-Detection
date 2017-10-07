@@ -35,9 +35,12 @@ if __name__ == "__main__":
         detect_boxes = np.loadtxt(filename).astype(int).reshape(-1,4)        
         img_draw = d.run(img, detect_boxes)
          
-        filename = "..//debug//{}.jpg".format(count_str)
+        filename = "..//debug//imgs//{}.jpg".format(count_str)
         cv2.imwrite(filename, img_draw)
         print(filename)
         count += 1
+
+
+
 
 
