@@ -5,7 +5,7 @@ import cv2
 from car.desc import HogDesc, HogMap
 from car.train import load_model
 from car.scan import MultipleScanner
-from car.heatmap import HeatMap
+from car.heatmap import HeatMap, separate
 
 # Todo : Box package #############################################
 from car.track import BoxTracker, Box
@@ -32,7 +32,12 @@ class VideoDetector(object):
                     is_exist = True
             return is_exist
         
-        _ = self._img_detector.run(img, do_heat_map=True, do_separation=_is_obscured())
+        _ = self._img_detector.run(img, do_heat_map=True)
+        
+        # Todo : 객체 내부를 변경하지 말자.
+        if _is_obscured():
+            self._img_detector.heat_boxes = separate(self._img_detector.heat_boxes)
+        
         return self._img_detector.heat_boxes
 
     def _get_pred_boxes(self):
