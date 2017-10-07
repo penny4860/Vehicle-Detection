@@ -24,6 +24,8 @@ The goals / steps of this project are the following:
 [image7]: ./examples/output_bboxes.png
 [video1]: ./project_video.mp4
 
+[image_framework]: ./output_images/image_framework.png
+
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
 ###Here I will consider the rubric points individually and describe how I addressed each point in my implementation.  
@@ -133,15 +135,17 @@ sliding window 와 관련된 parameter는 아래의 2가지가 있습니다.
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-Ultimately I searched on two scales using YCrCb 3-channel HOG features plus spatially binned color and histograms of color in the feature vector, which provided a nice result.  Here are some example images:
+입력 image에서 HOG feature vector 추출하여 sliding window 로 vehicle 영역을 scan하였습니다. scan이 끝난 후에는 heat map operation을 통해서 false negative patch 를 제거 하였고, 겹치는 positive patch 를 merge 하였습니다.
 
-![alt text][image4]
+![alt text][image_framework]
 ---
 
 ### Video Implementation
 
 ####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video.mp4)
+Here's a [link to my video result](./project_video_result.mp4)
+
+youtube 링크 추가
 
 
 ####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
