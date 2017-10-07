@@ -101,8 +101,6 @@ class VideoDetector(object):
 
         img_clone = self._draw_boxes(img, detect_boxes, (255, 0, 0), 8)
         
-        print(tracker.get_bb())
-        
         # 7. draw box
         for tracker in self._box_trackers:
             if tracker.is_draw():
