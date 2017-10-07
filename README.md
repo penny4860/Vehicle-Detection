@@ -27,6 +27,8 @@ The source code for heat map operation is [heatmap module](https://github.com/pe
 
 ## 5. Tracking using kalman filter
 
+I implemented the tracking algorithm using the kalman filter by referring to [Simple Online and Realtime Tracking](https://arxiv.org/abs/1602.00763). 
+
 Tracking related source code is [track module](https://github.com/penny4860/Vehicle-Detection/blob/master/car/track.py) and [detect module](https://github.com/penny4860/Vehicle-Detection/blob/master/car/track.py).
 
 ### 1) Object located in proximity
@@ -37,7 +39,7 @@ Tracking related source code is [track module](https://github.com/penny4860/Vehi
 
 <img src="output_images/tracking.png">
 
-I implemented the tracking algorithm using the kalman filter by referring to [Simple Online and Realtime Tracking](https://arxiv.org/abs/1602.00763). As a result, the green box in the figure above was detected.
+As a result of detection in the still image (blue box), it is impossible to recognize an obstacle in the above situation. However, some improvements can be made using the tracking algorithm. Data association is also performed well.
 
 ## How to run
 
