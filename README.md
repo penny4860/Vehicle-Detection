@@ -16,13 +16,18 @@ The trained classifier is stored at [model_v4.pkl](https://github.com/penny4860/
 
 <img src="output_images/scan.gif">
 
-The source code for the multiple scale sliding window is here[scan module](https://github.com/penny4860/Vehicle-Detection/blob/master/car/scan.py).
+The source code for the multiple scale sliding window is [scan module](https://github.com/penny4860/Vehicle-Detection/blob/master/car/scan.py).
 
 ## 4. Heatmap operation
 
 <img src="output_images/heatmap.png">
 
+The source code for heat map operation is [heatmap module](https://github.com/penny4860/Vehicle-Detection/blob/master/car/heatmap.py).
+
+
 ## 5. Tracking using kalman filter
+
+Tracking related source code is [track module](https://github.com/penny4860/Vehicle-Detection/blob/master/car/track.py) and [detect module](https://github.com/penny4860/Vehicle-Detection/blob/master/car/track.py).
 
 ### 1) Object located in proximity
 
@@ -33,6 +38,16 @@ The source code for the multiple scale sliding window is here[scan module](https
 <img src="output_images/tracking.png">
 
 I implemented the tracking algorithm using the kalman filter by referring to [Simple Online and Realtime Tracking](https://arxiv.org/abs/1602.00763). As a result, the green box in the figure above was detected.
+
+## How to run
+
+### 1) Still image detection framework
+
+Run [image detection driver](https://github.com/penny4860/Vehicle-Detection/blob/master/car/4_img_detection.py)
+
+### 2) Video detection framework
+
+Run [video detection driver](https://github.com/penny4860/Vehicle-Detection/blob/master/car/5_video_detection.py)
 
 
 ## Result Video
