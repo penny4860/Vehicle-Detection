@@ -17,7 +17,7 @@ if __name__ == "__main__":
     count = START
     for fname in img_files[START:]:
         img = cv2.imread(fname)
-        img_draw = d.run(img)
+        img_draw = d.run(img, False)
 
         count_str = "{}".format(count).zfill(5)
         filename = "..//project_video//debug//{}.jpg".format(count_str)
