@@ -50,10 +50,10 @@ class VideoDetector(object):
         self._group_idxes[idx] = True
         return idx
         
-    def run(self, img):
+    def run(self, img, detect_boxes):
 
-        # 1. run still image detection framework
-        detect_boxes = np.array(self._detect(img))
+#         # 1. run still image detection framework
+#         detect_boxes = np.array(self._detect(img))
 
         # 2. get tracking boxes
         tracking_boxes = self._get_pred_boxes()
@@ -99,7 +99,7 @@ class VideoDetector(object):
                 self._group_idxes[tracker.group_number] = False
                 self._box_trackers.remove(tracker)
 
-        img_clone = self._draw_boxes(img, self._img_detector.heat_boxes, (255, 0, 0), 8)
+        img_clone = self._draw_boxes(img, detect_boxes, (255, 0, 0), 8)
         
         print(tracker.get_bb())
         
