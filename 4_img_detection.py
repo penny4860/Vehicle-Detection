@@ -7,7 +7,7 @@ from car.utils import plot_images
 import cv2
 
 
-IMG_SRC_DIR = "..//project_video"
+IMG_SRC_DIR = "test_images"
 
 
 if __name__ == "__main__":
@@ -17,5 +17,5 @@ if __name__ == "__main__":
     for fname in img_files:
         img = cv2.imread(fname)
         img_draw = d.run(img)
-        cv2.imshow("image detection framework", img_draw)
+        cv2.imshow("{} : image detection framework".format(fname), img_draw)
         cv2.waitKey(0)
