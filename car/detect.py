@@ -228,8 +228,6 @@ class ImgDetector(object):
 
         
 if __name__ == "__main__":
-    prev_cars = [Car([500,500, 664, 664]), Car([100,100, 164, 164]), Car([300,300, 364, 364])]
-    cars = [Car([110,110, 174, 174]), Car([310,310, 374, 374])]
-    print(match(cars, prev_cars))
+    pass
 
 
