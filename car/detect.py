@@ -55,7 +55,7 @@ class VideoDetector(object):
         self._group_idxes[idx] = True
         return idx
         
-    def run(self, img):
+    def run(self, img, draw_unfiltered_box=True):
 
         # 1. run still image detection framework
         detect_boxes = np.array(self._detect(img))
@@ -97,7 +97,10 @@ class VideoDetector(object):
                 self._group_idxes[tracker.group_number] = False
                 self._box_trackers.remove(tracker)
 
-        img_clone = self._draw_boxes(img, detect_boxes, (255, 0, 0), 8)
+        if draw_unfiltered_box:
+            img_clone = self._draw_boxes(img, detect_boxes, (255, 0, 0), 8)
+        else:
+            img_clone = img.copy()
         
         # 7. draw box
         for tracker in self._box_trackers:
