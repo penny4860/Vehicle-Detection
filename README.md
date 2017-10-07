@@ -10,7 +10,7 @@ I implemented Vehicle Detection and Tracking algorithm using HOG, SVM, and Kalma
 
 ### 2. SVM classfication
 
-The trained classifier is stored at [model_v4.pkl](https://github.com/penny4860/Vehicle-Detection/blob/master/model_v4.pkl) as a binary file.
+The trained classifier is stored at [model_v4.pkl](https://drive.google.com/drive/folders/0B-NpzyGJDuXEVmR4eU1sUnFXVTg) as a binary file.
 
 ### 3. Sliding window scanning
 
