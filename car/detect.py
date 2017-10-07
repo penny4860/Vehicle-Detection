@@ -33,11 +33,12 @@ class VideoDetector(object):
             return is_exist
         
         _ = self._img_detector.run(img, do_heat_map=True)
-        
+
+        detected_boxes = self._img_detector.heat_boxes
         if _is_obscured():
-            heat_boxes = separate(self._img_detector.heat_boxes)
+            detected_boxes = separate(detected_boxes)
         
-        return heat_boxes
+        return detected_boxes
 
     def _get_pred_boxes(self):
         tracking_boxes = []
