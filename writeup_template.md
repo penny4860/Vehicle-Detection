@@ -128,7 +128,7 @@ sliding window 와 관련된 parameter는 아래의 2가지가 있습니다.
 * search step : window가 한번에 전진하는 step을 의미 합니다. test time에서는 HOG feature를 patch 별로 구하는 것이 아니라 image 전체에 대해서 구하게 됩니다. 따라서 1개 cell의 크기인 8의 배수중에서 16으로 정하였습니다.
 * scale : image pyramid 를 구성할 때 layer가 줄어드는 비율을 의미합니다. 작은 값을 사용할 수록 scan 시간이 단축되는 효과가 있지만, detection 성능이 안좋아 질 수 있습니다. 0.6 ~ 0.8 사이의 값을 실험해 보았고, 0.8로 정하였습니다.
 
-<img src="examples/scan.gif">
+<img src="output_images/scan.gif">
 
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
