@@ -15,16 +15,9 @@ The goals / steps of this project are the following:
 * Estimate a bounding box for vehicles detected.
 
 [//]: # (Image References)
-[image1]: ./examples/car_not_car.png
-[image2]: ./examples/HOG_example.jpg
-[image3]: ./examples/sliding_windows.jpg
-[image4]: ./examples/sliding_window.jpg
-[image5]: ./examples/bboxes_and_heat.png
-[image6]: ./examples/labels_map.png
-[image7]: ./examples/output_bboxes.png
-[video1]: ./project_video.mp4
-
 [image_framework]: ./output_images/image_framework.png
+[heat_framework]: ./output_images/heatmap.png
+[separation]: ./output_images/separation.png
 
 
 ## [Rubric](https://review.udacity.com/#!/rubrics/513/view) Points
@@ -135,7 +128,7 @@ sliding window 와 관련된 parameter는 아래의 2가지가 있습니다.
 
 ####2. Show some examples of test images to demonstrate how your pipeline is working.  What did you do to optimize the performance of your classifier?
 
-입력 image에서 HOG feature vector 추출하여 sliding window 로 vehicle 영역을 scan하였습니다. scan이 끝난 후에는 heat map operation을 통해서 false negative patch 를 제거 하였고, 겹치는 positive patch 를 merge 하였습니다.
+입력 image에서 HOG feature vector 추출하여 sliding window 로 vehicle 영역을 scan하였습니다. scan이 끝난 후에는 heat map operation을 통해서 false positive patch 를 제거 하였고, 겹치는 positive patch 를 merge 하였습니다.
 
 ![alt text][image_framework]
 ---
@@ -143,27 +136,16 @@ sliding window 와 관련된 parameter는 아래의 2가지가 있습니다.
 ### Video Implementation
 
 ####1. Provide a link to your final video output.  Your pipeline should perform reasonably well on the entire project video (somewhat wobbly or unstable bounding boxes are ok as long as you are identifying the vehicles most of the time with minimal false positives.)
-Here's a [link to my video result](./project_video_result.mp4)
 
-youtube 링크 추가
+Here's a [youtube link](https://www.youtube.com/watch?v=DgNtyNuCMbQ&feature=youtu.be) and [github link](https://github.com/penny4860/Vehicle-Detection/project_video_result.mp4)
+
 
 
 ####2. Describe how (and identify where in your code) you implemented some kind of filter for false positives and some method for combining overlapping bounding boxes.
 
-I recorded the positions of positive detections in each frame of the video.  From the positive detections I created a heatmap and then thresholded that map to identify vehicle positions.  I then used `scipy.ndimage.measurements.label()` to identify individual blobs in the heatmap.  I then assumed each blob corresponded to a vehicle.  I constructed bounding boxes to cover the area of each blob detected.  
+아래의 그림과 같이 heat map 을 구성하여 false positive patch 를 제거하고, overlap 영역에 대해서 merge 를 수행하였습니다.
 
-Here's an example result showing the heatmap from a series of frames of video, the result of `scipy.ndimage.measurements.label()` and the bounding boxes then overlaid on the last frame of video:
-
-### Here are six frames and their corresponding heatmaps:
-
-![alt text][image5]
-
-### Here is the output of `scipy.ndimage.measurements.label()` on the integrated heatmap from all six frames:
-![alt text][image6]
-
-### Here the resulting bounding boxes are drawn onto the last frame in the series:
-![alt text][image7]
-
+![alt text][heat_framework]
 
 
 ---
@@ -172,5 +154,21 @@ Here's an example result showing the heatmap from a series of frames of video, t
 
 ####1. Briefly discuss any problems / issues you faced in your implementation of this project.  Where will your pipeline likely fail?  What could you do to make it more robust?
 
-Here I'll talk about the approach I took, what techniques I used, what worked and why, where the pipeline might fail and how I might improve it if I were going to pursue this project further.  
+##### 1) Limiatations of HOG + SVM classifier
+
+저는 이 프로젝트에서 HOG feature extractor 와 SVM 을 이용한 classifier 를 구현하였습니다. 이러한 방식은 적은 수의 training sample 로도 괜찮은 수준의 classifier 를 구현할 수 있다는 점에서 장점이 있습니다. 
+그러나, 이러한 방법은 CNN (Convolutional Neural Network) 를 사용한 방법보다 성능이 떨어 집니다. 만약에 training sample 을 더 수집할 수 있다면, CNN의 사용을 생각해 볼 수 있을 것입니다.
+
+##### 2) Limitations of Sliding window fashion
+
+Sliding window 방식은 이미지의 여러 patch에 classifier를 적용해서 각 patch를 desired object 또는 배경으로 분류합니다. 이러한 방식은 object detection 알고리즘을 구현할 때 가장 먼저 생각할 수 있는 방법이고, 성능도 나쁘지 않습니다. 그러나, slidinw window 방식은 2개 이상의 object가 근접해 있을 경우 이를 분리하는 것이 어렵습니다. 
+
+![alt text][separation]
+
+위 그림에서와 같이 still image 정보만으로는 근접해 있는 2개의 object를 분리해서 인식하는 것이 어려웠습니다. 저는 본 프로젝트에서 이 문제를 해결하기 위해 이전 frames 에서의 인식된 정보를 사용하였습니다. 
+[Simple Online and Realtime Tracking](https://arxiv.org/abs/1602.00763)을 참고해서 kalman filter를 이용한 tracking 알고리즘을 구현했습니다. 그 결과 위 그림에서의 초록색 box와 같은 검출 결과가 도출되었습니다.
+
+그러나, time-series information을 사용해서 still image에서의 detection 성능을 극복하는 것에는 한계가 있습니다. 
+still image에서 인식 성능을 높이기 위해서는 [YOLO 9000](https://arxiv.org/abs/1612.08242) 이나 [SSD](https://arxiv.org/abs/1512.02325)와 같은 방법을 사용할 수 있습니다. 
+이 논문들에서는 image 를 여러개의 작은 grid로 나누고, 각 grid 마다 여러개의 object를 검출하는 방식을 사용했습니다. 매우 효과적인 방법이라고 생각합니다.
 
